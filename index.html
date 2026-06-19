@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Киноклуб Саши — подготовка к 610</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@700&display=swap');
+
+  :root{
+    --ink:#16203a;
+    --ink-soft:#233155;
+    --paper:#f6efe0;
+    --paper-deep:#ece1c9;
+    --paper-edge:#d8cba8;
+    --gold:#d99a3f;
+    --gold-deep:#b97e2a;
+    --gold-glow:#f3c878;
+    --ruby:#b6403a;
+    --ruby-soft:#d06b63;
+    --text-light:#f3ead7;
+    --text-dim:#a8b2cc;
+    --card-ink:#1d2842;
+    --card-dim:#6a6049;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  html{background:#131d36;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{
+    font-family:'PT Sans',system-ui,sans-serif;
+    color:var(--text-light);
+    background:
+      radial-gradient(1100px 520px at 50% -240px, #2c3d68 0%, #1a2545 42%, #131d36 100%) no-repeat,
+      #131d36;
+    min-height:100vh;min-height:100dvh;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  button,a,input,.tab,.chip,.act{-webkit-tap-highlight-color:rgba(217,154,63,.25);touch-action:manipulation}
+  .wrap{max-width:1120px;margin:0 auto;padding:22px 18px 60px}
+
+  /* ---------- Marquee header ---------- */
+  .marquee{
+    position:relative;
+    border-radius:18px;
+    padding:26px 26px 22px;
+    background:linear-gradient(180deg,#1f2c4e,#192442);
+    border:1px solid rgba(243,200,120,.22);
+    box-shadow:0 18px 50px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05);
+    overflow:hidden;
+  }
+  .marquee::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:90px;
+    background:radial-gradient(420px 120px at 50% -40px, rgba(243,200,120,.35), transparent 70%);
+    pointer-events:none;
+  }
+  .kicker{
+    font-family:'PT Sans Narrow',sans-serif;font-weight:700;
+    letter-spacing:.28em;text-transform:uppercase;font-size:12px;
+    color:var(--gold-glow);margin:0 0 6px;
+  }
+  h1.title{
+    font-family:'Russo One',sans-serif;font-weight:400;
+    font-size:clamp(28px,6vw,46px);line-height:1.02;margin:0;
+    color:var(--text-light);
+    text-shadow:0 2px 0 rgba(0,0,0,.25);
+  }
+  h1.title .reel{color:var(--gold)}
+  .sub{margin:10px 0 0;color:var(--text-dim);max-width:60ch;font-size:15px}
+  .sub b{color:#e7dcc4;font-weight:700}
+
+  /* progress filmstrip */
+  .progress{margin-top:20px}
+  .strip{position:relative;height:36px;border-radius:7px;background:#0d1630;
+    overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+  .strip__fill{height:100%;width:0%;
+    background:linear-gradient(90deg,var(--gold-deep),var(--gold) 55%,var(--gold-glow));
+    transition:width .55s cubic-bezier(.2,.7,.2,1)}
+  .strip__perf{position:absolute;inset:0;pointer-events:none;
+    background:
+      repeating-linear-gradient(90deg,transparent 0 11px,rgba(7,11,24,.92) 11px 17px) top/100% 7px no-repeat,
+      repeating-linear-gradient(90deg,transparent 0 11px,rgba(7,11,24,.92) 11px 17px) bottom/100% 7px no-repeat;}
+  .strip__label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'PT Sans Narrow',sans-serif;font-weight:700;letter-spacing:.12em;
+    font-size:14px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);text-transform:uppercase}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:22px 0 6px}
+  .search{flex:1 1 240px;min-width:200px;position:relative}
+  .search input{
+    width:100%;padding:11px 14px 11px 38px;border-radius:11px;
+    border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);
+    color:var(--text-light);font-size:16px;font-family:inherit;outline:none}
+  .search input::placeholder{color:#8b95b3}
+  .search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,154,63,.2)}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;
+    stroke:#8b95b3;fill:none;stroke-width:2}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:'PT Sans Narrow',sans-serif;font-weight:700;letter-spacing:.04em;
+    font-size:14px;padding:8px 13px;border-radius:999px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.16);background:transparent;color:var(--text-dim)}
+  .chip[aria-pressed="true"]{background:var(--text-light);color:var(--ink);border-color:var(--text-light)}
+  .chip:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+  /* ---------- Category tabs ---------- */
+  .tabs{display:flex;gap:9px;overflow-x:auto;padding:14px 2px 6px;margin:6px -2px 0;
+    scrollbar-width:thin}
+  .tab{flex:0 0 auto;cursor:pointer;border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);color:var(--text-light);
+    border-radius:13px;padding:11px 15px;text-align:left;min-width:140px;font-family:inherit}
+  .tab:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .tab[aria-selected="true"]{background:linear-gradient(180deg,#fbf4e6,#efe3c9);color:var(--ink);
+    border-color:var(--gold);box-shadow:0 8px 22px rgba(0,0,0,.32)}
+  .tab .tab__ico{font-size:18px;line-height:1}
+  .tab .tab__name{display:block;font-weight:700;font-size:15px;margin-top:5px}
+  .tab .tab__count{display:block;font-family:'PT Sans Narrow',sans-serif;font-weight:700;
+    font-size:13px;letter-spacing:.05em;opacity:.7;margin-top:1px}
+
+  /* ---------- Section ---------- */
+  .section-head{margin:26px 0 4px}
+  .section-head h2{font-family:'Russo One',sans-serif;font-weight:400;
+    font-size:clamp(20px,3.6vw,28px);margin:0;color:var(--text-light)}
+  .section-head p{margin:7px 0 0;color:var(--text-dim);font-size:14.5px;max-width:70ch}
+
+  /* archives block (toons) */
+  .archives{display:flex;flex-wrap:wrap;gap:11px;margin:16px 0 6px}
+  .arch{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+    background:rgba(243,200,120,.1);border:1px dashed rgba(243,200,120,.5);
+    color:var(--gold-glow);padding:11px 15px;border-radius:12px;font-weight:700;font-size:14.5px}
+  .arch:hover{background:rgba(243,200,120,.18)}
+  .arch span.t{font-size:18px}
+
+  /* ---------- Cards grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px;margin-top:18px}
+  .item{position:relative;background:var(--paper);color:var(--card-ink);
+    border:1px solid var(--paper-edge);border-left:4px solid var(--paper-edge);
+    border-radius:14px;padding:16px 15px 14px;display:flex;flex-direction:column;
+    min-height:128px;box-shadow:0 6px 16px rgba(0,0,0,.22);transition:transform .12s ease}
+  .item:hover{transform:translateY(-2px)}
+  .item.is-planned{border-left-color:var(--ruby)}
+  .item.is-watched{border-left-color:var(--gold);background:var(--paper-deep)}
+
+  .item__num{display:inline-block;font-family:'PT Sans Narrow',sans-serif;font-weight:700;
+    font-size:12px;color:#fff;background:var(--ink-soft);border-radius:6px;
+    padding:2px 7px;margin-right:7px;vertical-align:2px;letter-spacing:.03em}
+  .item__title{font-weight:700;font-size:16.5px;line-height:1.22;color:var(--card-ink);margin:0}
+  .item__meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .yr{font-family:'PT Sans Narrow',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.05em;
+    background:rgba(217,154,63,.16);color:var(--gold-deep);padding:2px 8px;border-radius:6px}
+  .by{font-size:13px;color:var(--card-dim)}
+  .by b{color:#4a4233;font-weight:700}
+  .note{margin-top:7px;font-size:12.5px;color:var(--card-dim);line-height:1.35}
+
+  .item__actions{margin-top:auto;padding-top:13px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .act{cursor:pointer;font-family:'PT Sans',sans-serif;font-weight:700;font-size:13.5px;
+    border-radius:9px;padding:8px 11px;border:1.5px solid var(--paper-edge);
+    background:#fff;color:var(--card-ink);display:inline-flex;align-items:center;gap:6px;line-height:1}
+  .act:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .act .i{font-size:14px}
+  .act.want[aria-pressed="true"]{background:var(--ruby);border-color:var(--ruby);color:#fff}
+  .act.seen[aria-pressed="true"]{background:var(--gold);border-color:var(--gold-deep);color:#2a2009}
+  .watch-link{margin-left:auto;text-decoration:none;font-weight:700;font-size:13px;
+    color:var(--ink-soft);border-bottom:2px solid rgba(35,49,85,.25);padding-bottom:1px}
+  .watch-link:hover{color:var(--ruby);border-color:var(--ruby)}
+
+  /* badges */
+  .flag{position:absolute;top:10px;left:0;transform:translateX(-3px);
+    background:var(--ruby);color:#fff;font-family:'PT Sans Narrow',sans-serif;font-weight:700;
+    font-size:11px;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px 3px 7px;
+    border-radius:0 8px 8px 0;box-shadow:0 3px 8px rgba(0,0,0,.25);display:none}
+  .item.is-planned .flag{display:inline-block}
+  .seal{position:absolute;top:9px;right:9px;width:44px;height:44px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,var(--gold-glow),var(--gold) 55%,var(--gold-deep));
+    border:2px solid #fff5e2;box-shadow:0 4px 12px rgba(0,0,0,.3);
+    display:none;align-items:center;justify-content:center;transform:rotate(-8deg)}
+  .seal svg{width:24px;height:24px;stroke:#3a2a08;stroke-width:3.4;fill:none;
+    stroke-linecap:round;stroke-linejoin:round}
+  .item.is-watched .seal{display:flex;animation:stamp .36s cubic-bezier(.2,.8,.3,1.25) both}
+  @keyframes stamp{
+    0%{transform:scale(2.1) rotate(-20deg);opacity:0}
+    58%{transform:scale(.86) rotate(5deg);opacity:1}
+    100%{transform:scale(1) rotate(-8deg);opacity:1}}
+
+  /* add form (Моё) */
+  .addbox{background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.2);
+    border-radius:14px;padding:16px;margin-top:18px;display:grid;gap:10px;
+    grid-template-columns:2fr 1fr 2fr auto;align-items:end}
+  .field label{display:block;font-family:'PT Sans Narrow',sans-serif;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;font-size:11.5px;color:var(--text-dim);margin-bottom:4px}
+  .field input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06);color:var(--text-light);font-family:inherit;font-size:16px;outline:none}
+  .field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,154,63,.2)}
+  .add-btn{cursor:pointer;background:var(--gold);color:#2a2009;border:none;border-radius:10px;
+    padding:11px 18px;font-family:inherit;font-weight:700;font-size:15px;height:42px}
+  .add-btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .item .del{position:absolute;bottom:13px;right:13px;cursor:pointer;background:none;border:none;
+    color:var(--ruby);font-size:13px;font-weight:700;font-family:inherit;text-decoration:underline}
+
+  .empty{margin:30px 0;text-align:center;color:var(--text-dim);font-size:15px;
+    border:1px dashed rgba(255,255,255,.16);border-radius:14px;padding:34px 18px}
+  .empty .big{font-size:30px;display:block;margin-bottom:8px;opacity:.8}
+
+  footer{margin-top:40px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;
+    align-items:center;color:var(--text-dim);font-size:13px;border-top:1px solid rgba(255,255,255,.1);padding-top:18px}
+  .reset{background:none;border:none;color:var(--ruby-soft);cursor:pointer;font-family:inherit;
+    font-size:13px;text-decoration:underline}
+
+  /* ---------- Синхронизация ---------- */
+  .syncwrap{margin-top:14px}
+  .syncbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .syncpill{font-family:'PT Sans Narrow',sans-serif;font-weight:700;letter-spacing:.04em;
+    font-size:13.5px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);
+    color:var(--text-dim)}
+  .syncpill.ok{background:rgba(79,122,74,.22);border-color:rgba(120,190,130,.5);color:#bfe6c4}
+  .syncpill.busy{background:rgba(217,154,63,.16);border-color:rgba(243,200,120,.5);color:var(--gold-glow)}
+  .syncpill.err{background:rgba(182,64,58,.18);border-color:rgba(208,107,99,.6);color:#f0bdb8}
+  .syncbtn{cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;border-radius:9px;
+    padding:8px 13px;border:1px solid var(--gold);background:var(--gold);color:#2a2009;line-height:1}
+  .syncbtn.ghost{background:transparent;color:var(--text-light);border-color:rgba(255,255,255,.2)}
+  .syncbtn.danger{background:transparent;color:var(--ruby-soft);border-color:rgba(208,107,99,.5)}
+  .syncbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .syncpanel{margin-top:11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+    border-radius:13px;padding:14px}
+  .synchelp{margin:0 0 10px;color:var(--text-dim);font-size:13.5px;line-height:1.45}
+  .synchelp b{color:#e7dcc4}
+  .syncfields{display:flex;flex-wrap:wrap;gap:9px}
+  .syncfields input{flex:1 1 180px;min-width:150px;padding:10px 12px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text-light);
+    font-family:inherit;font-size:16px;outline:none}
+  .syncfields input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,154,63,.2)}
+  .syncrow{display:flex;flex-wrap:wrap;gap:9px}
+  .syncok{margin:10px 0 0;color:#bfe6c4;font-size:13px}
+  .syncerr{margin:10px 0 0;color:#f0bdb8;font-size:13px}
+
+  @media (max-width:620px){
+    .addbox{grid-template-columns:1fr 1fr;}
+    .field.full{grid-column:1 / -1}
+    .add-btn{grid-column:1 / -1}
+    .toolbar{gap:10px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="marquee">
+    <p class="kicker">Подготовка к гимназии № 610</p>
+    <h1 class="title">Мой <span class="reel">киноклуб</span></h1>
+    <p class="sub">Фильмы, мультфильмы и диафильмы из списка Ю. В. Малковой. Жми <b>«Хочу посмотреть»</b> на то, что планируешь, и <b>«Посмотрел»</b> на то, что уже видел — прогресс сохраняется сам.</p>
+    <div class="progress">
+      <div class="strip">
+        <div class="strip__fill" id="fill"></div>
+        <div class="strip__perf"></div>
+        <div class="strip__label" id="progLabel">Загрузка…</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="syncwrap" id="syncwrap"></div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      <input id="q" type="search" placeholder="Поиск по названию…" autocomplete="off">
+    </div>
+    <div class="chips" id="stateChips">
+      <button class="chip" data-state="all" aria-pressed="true">Все</button>
+      <button class="chip" data-state="planned" aria-pressed="false">Хочу посмотреть</button>
+      <button class="chip" data-state="watched" aria-pressed="false">Посмотрел</button>
+      <button class="chip" data-state="todo" aria-pressed="false">Ещё не смотрел</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+
+  <main id="content" aria-live="polite"></main>
+
+  <footer>
+    <span>По рекомендациям к семейному просмотру Ю. В. Малковой · гимназия № 610</span>
+    <button class="reset" id="reset">Сбросить весь прогресс</button>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ----------------------------- Каталог ----------------------------- */
+const CATS = [
+  {
+    key:"gold", ico:"⭐", label:"Золотая полка",
+    title:"Золотая полка",
+    blurb:"Киноленты, которые Ю. В. Малкова настоятельно рекомендует к семейному просмотру. Начинать стоит отсюда.",
+    items:[
+      {id:"g1", t:"Метель", y:"1964", d:"Владимир Басов"},
+      {id:"g2", t:"Вий", y:"1967", d:"К. Ершов, Г. Кропачёв, А. Птушко"},
+      {id:"g3", t:"Приключения Шерлока Холмса и доктора Ватсона", y:"1979", d:"Игорь Масленников",
+        note:"Цикл: Знакомство · Король шантажа · Кровавая надпись · Охота на тигра · Смертельная схватка · Собака Баскервилей · Сокровища Агры"},
+      {id:"g4", t:"Человек-невидимка", y:"1984", d:"Александр Захаров"},
+      {id:"g5", t:"Тимур и его команда", y:"1976", d:"А. Бланк, С. Линков"},
+      {id:"g6", t:"Республика ШКИД", y:"1966", d:"Геннадий Полока"},
+      {id:"g7", t:"Маленькие трагедии", y:"1979", d:"Михаил Швейцер"},
+      {id:"g8", t:"Снежная королева", y:"1966", d:"Геннадий Казанский"},
+      {id:"g9", t:"Остров сокровищ", y:"1982", d:"Владимир Воробьёв"},
+      {id:"g10", t:"Всадник без головы", y:"1973", d:"Владимир Вайншток"},
+      {id:"g11", t:"Дети капитана Гранта", y:"1936", d:"Владимир Вайншток"},
+      {id:"g12", t:"В поисках капитана Гранта", y:"1985", d:"Станислав Говорухин"},
+      {id:"g13", t:"Баллада о доблестном рыцаре Айвенго", y:"1983", d:"Сергей Тарасов"},
+      {id:"g14", t:"Приключения Тома Сойера и Гекльберри Финна", y:"1981", d:"Станислав Говорухин"},
+      {id:"g15", t:"Два капитана", y:"", d:""},
+      {id:"g16", t:"Как поссорился Иван Иванович с Иваном Никифоровичем", y:"", d:"по Н. В. Гоголю, реж. В. Карасёв"},
+      {id:"g17", t:"Белый пудель", y:"", d:"по А. И. Куприну, реж. М. Рошаль, В. Шредель"},
+      {id:"g18", t:"Дон Кихот", y:"", d:"по М. Сервантесу, реж. Г. Козинцев"},
+      {id:"g19", t:"Дубровский", y:"", d:"по А. С. Пушкину, реж. А. Ивановский"},
+      {id:"g20", t:"Капитанская дочка", y:"", d:"по А. С. Пушкину, реж. В. Каплуновский"},
+      {id:"g21", t:"Майская ночь, или Утопленница", y:"", d:"по Н. В. Гоголю, реж. А. Роу"}
+    ]
+  },
+  {
+    key:"hall", ico:"🎬", label:"Кинозал",
+    title:"Кинозал · советские фильмы",
+    blurb:"Большой список художественных фильмов по годам — смотреть в любом порядке, по настроению. Режиссёра Малкова предлагает искать самим.",
+    items:[
+      {id:"h1", n:1, t:"Академия пана Кляксы", y:"1984"},
+      {id:"h2", n:2, t:"Аленький цветочек", y:"1977"},
+      {id:"h3", n:3, t:"Али-Баба и 40 разбойников", y:"1983"},
+      {id:"h4", n:4, t:"Алые паруса", y:"1961"},
+      {id:"h5", n:5, t:"Бегущая по волнам", y:"1967, 2007"},
+      {id:"h6", n:6, t:"Белый Бим Чёрное ухо", y:"1977"},
+      {id:"h7", n:7, t:"Бременские музыканты", y:"2000"},
+      {id:"h8", n:8, t:"Бронзовая птица", y:"1974"},
+      {id:"h9", n:9, t:"Будьте готовы, Ваше Высочество!", y:"1978"},
+      {id:"h10", n:10, t:"В поисках капитана Гранта", y:"1985"},
+      {id:"h11", n:11, t:"Военная тайна", y:"1958"},
+      {id:"h12", n:12, t:"Волшебная лампа Аладдина", y:"1966"},
+      {id:"h13", n:13, t:"Волшебник Изумрудного города", y:"1994"},
+      {id:"h14", n:14, t:"Волшебный голос Джельсомино", y:"1977"},
+      {id:"h15", n:15, t:"Два капитана", y:"1976"},
+      {id:"h16", n:16, t:"Двенадцать месяцев", y:"1972"},
+      {id:"h17", n:17, t:"Денискины рассказы", y:"1973"},
+      {id:"h18", n:18, t:"Детство Бемби", y:"1985"},
+      {id:"h19", n:19, t:"Детство Тёмы", y:"1990"},
+      {id:"h20", n:20, t:"Зверобой", y:"1990"},
+      {id:"h21", n:21, t:"Золотой ключик", y:"1939"},
+      {id:"h22", n:22, t:"Золушка", y:"1947"},
+      {id:"h23", n:23, t:"Илья Муромец", y:"1956"},
+      {id:"h24", n:24, t:"Калиф-аист", y:"1968"},
+      {id:"h25", n:25, t:"Каменный цветок", y:"1946"},
+      {id:"h26", n:26, t:"Капитан Немо", y:"1975"},
+      {id:"h27", n:27, t:"Каштанка", y:"1975"},
+      {id:"h28", n:28, t:"Конёк-горбунок", y:"1941"},
+      {id:"h29", n:29, t:"Королевство кривых зеркал", y:"1963"},
+      {id:"h30", n:30, t:"Левша", y:"1986"},
+      {id:"h31", n:31, t:"Маленький принц", y:"1993"},
+      {id:"h32", n:32, t:"Малыш и Карлсон, который живёт на крыше", y:"1971"},
+      {id:"h33", n:33, t:"Мальчик с пальчик", y:"1985"},
+      {id:"h34", n:34, t:"Марья-искусница", y:"1959"},
+      {id:"h35", n:35, t:"Мио, мой Мио", y:"1987"},
+      {id:"h36", n:36, t:"Морозко", y:"1964"},
+      {id:"h37", n:37, t:"Мэри Поппинс, до свидания", y:"1983"},
+      {id:"h38", n:38, t:"Необыкновенные приключения Карика и Вали", y:"1987"},
+      {id:"h39", n:39, t:"Одиссея капитана Блада", y:"1991"},
+      {id:"h40", n:40, t:"Ослиная шкура", y:"1982"},
+      {id:"h41", n:41, t:"Остров сокровищ", y:"1971, 1982"},
+      {id:"h42", n:42, t:"Пеппи Длинныйчулок", y:"1984"},
+      {id:"h43", n:43, t:"Питер Пэн", y:"1987"},
+      {id:"h44", n:44, t:"Принц и нищий", y:"1942"},
+      {id:"h45", n:45, t:"Принцесса на горошине", y:"1976"},
+      {id:"h46", n:46, t:"Приключения Али-бабы и сорока разбойников", y:"1979"},
+      {id:"h47", n:47, t:"Приключения Буратино", y:"1975"},
+      {id:"h48", n:48, t:"Приключения Калле-сыщика", y:"1976"},
+      {id:"h49", n:49, t:"Приключения Кроша", y:"1961"},
+      {id:"h50", n:50, t:"Приключения маленького Мука", y:"1983"},
+      {id:"h51", n:51, t:"Приключения Тома Сойера и Гекльберри Финна", y:"1981"},
+      {id:"h52", n:52, t:"Проданный смех", y:"1981"},
+      {id:"h53", n:53, t:"Путешествие пана Кляксы", y:"1986"},
+      {id:"h54", n:54, t:"Пятнадцатилетний капитан", y:"1945"},
+      {id:"h55", n:55, t:"Расмус-бродяга", y:"1978"},
+      {id:"h56", n:56, t:"Республика ШКИД", y:"1966"},
+      {id:"h57", n:57, t:"Рикки-Тикки-Тави", y:"1975"},
+      {id:"h58", n:58, t:"Русалочка", y:"1976"},
+      {id:"h59", n:59, t:"Руслан и Людмила", y:"1972"},
+      {id:"h60", n:60, t:"Рыцарь из Княж-городка", y:"1978"},
+      {id:"h61", n:61, t:"Садко", y:"1952"},
+      {id:"h62", n:62, t:"Синяя птица", y:"1970"},
+      {id:"h63", n:63, t:"Сказка о Мальчише-Кибальчише", y:"1964"},
+      {id:"h64", n:64, t:"Сказка о потерянном времени", y:"1964"},
+      {id:"h65", n:65, t:"Сказка о царе Салтане", y:"1966"},
+      {id:"h66", n:66, t:"Смок и Малыш", y:"1975"},
+      {id:"h67", n:67, t:"Снегурочка", y:"1968"},
+      {id:"h68", n:68, t:"Старик Хоттабыч", y:"1956"},
+      {id:"h69", n:69, t:"Сын полка", y:"1981"},
+      {id:"h70", n:70, t:"Тимур и его команда", y:"1940, 1976"},
+      {id:"h71", n:71, t:"Три толстяка", y:"1966"},
+      {id:"h72", n:72, t:"Удивительные приключения Дениса Кораблёва", y:"1979"},
+      {id:"h73", n:73, t:"Фантазёры", y:"1965"},
+      {id:"h74", n:74, t:"Финист — Ясный сокол", y:"1975"},
+      {id:"h75", n:75, t:"Чёрная курица, или Подземные жители", y:"1980"},
+      {id:"h76", n:76, t:"Чиполлино", y:"1973"},
+      {id:"h77", n:77, t:"Чудак из пятого «Б»", y:"1972"},
+      {id:"h78", n:78, t:"Чук и Гек", y:"1953"}
+    ]
+  },
+  {
+    key:"girls", ico:"👧", label:"Про девочек",
+    title:"Фильмы по книгам · героини — девочки",
+    blurb:"Фильмы по книгам, главные герои которых — девочки. Ссылка ведёт на книгу (Лабиринт), чтобы прочитать и посмотреть.",
+    items:[
+      {id:"gl1", n:1, t:"Поллианна", link:"http://www.labirint.ru/books/397067/?p=7207", linkLabel:"о книге"},
+      {id:"gl2", n:2, t:"Хайди", link:"http://www.labirint.ru/books/361487/?p=7207", linkLabel:"о книге"},
+      {id:"gl3", n:3, t:"Энн из Зелёных крыш", link:"http://www.labirint.ru/books/425833/?p=7207", linkLabel:"о книге"},
+      {id:"gl4", n:4, t:"Золотой компас", link:"http://www.labirint.ru/books/525095/?p=7207", linkLabel:"о книге"},
+      {id:"gl5", n:5, t:"Таинственный сад", link:"http://www.labirint.ru/books/328982/?p=7207", linkLabel:"о книге"},
+      {id:"gl6", n:6, t:"Три жизни Томасины", link:"http://www.labirint.ru/books/458088/?p=7207", linkLabel:"о книге"},
+      {id:"gl7", n:7, t:"Маленькая принцесса", link:"http://www.labirint.ru/books/467968/?p=7207", linkLabel:"о книге"},
+      {id:"gl8", n:8, t:"Маленькие женщины", link:"http://www.labirint.ru/books/449401/?p=7207", linkLabel:"о книге"},
+      {id:"gl9", n:9, t:"Ронья, дочь разбойника", link:"http://www.labirint.ru/books/455022/?p=7207", linkLabel:"о книге"},
+      {id:"gl10", n:10, t:"Балетные туфельки", link:"http://www.labirint.ru/books/50565/?p=7207", linkLabel:"о книге"}
+    ]
+  },
+  {
+    key:"boys", ico:"👦", label:"Про мальчиков",
+    title:"Фильмы по книгам · герои — мальчики",
+    blurb:"Фильмы по книгам, главные герои которых — мальчики. Ссылка ведёт на книгу (Лабиринт).",
+    items:[
+      {id:"bo1", n:1, t:"Том Сойер", y:"2011", link:"http://www.labirint.ru/books/478839/?p=7207", linkLabel:"о книге"},
+      {id:"bo2", n:2, t:"Приключения Гекльберри Финна", y:"1993", link:"http://www.labirint.ru/books/406402/?p=7207", linkLabel:"о книге"},
+      {id:"bo3", n:3, t:"Маленький принц", y:"1974", link:"http://www.labirint.ru/books/153996/?p=7207", linkLabel:"о книге"},
+      {id:"bo4", n:4, t:"Маленький лорд Фаунтлерой", y:"1980", link:"http://www.labirint.ru/books/502083/?p=7207", linkLabel:"о книге"},
+      {id:"bo5", n:5, t:"Эмиль из Лённеберге", y:"1971", link:"http://www.labirint.ru/books/409238/?p=7207", linkLabel:"о книге"},
+      {id:"bo6", n:6, t:"Питер Пэн", y:"2003", link:"http://www.labirint.ru/books/457101/?p=7207", linkLabel:"о книге"},
+      {id:"bo7", n:7, t:"Расмус-бродяга", y:"1979", link:"http://www.labirint.ru/books/507691/?p=7207", linkLabel:"о книге"},
+      {id:"bo8", n:8, t:"Тим Талер, или Проданный смех", y:"1981", link:"http://www.labirint.ru/books/458423/?p=7207", linkLabel:"о книге"},
+      {id:"bo9", n:9, t:"Каникулы Николя", y:"2009", link:"http://www.labirint.ru/series/20770/?p=7207", linkLabel:"о книге"},
+      {id:"bo10", n:10, t:"Мио, мой Мио", y:"1987", link:"http://www.labirint.ru/books/423140/?p=7207", linkLabel:"о книге"}
+    ]
+  },
+  {
+    key:"toons", ico:"🎞️", label:"Мульт- и диафильмы",
+    title:"Мультфильмы и диафильмы",
+    blurb:"Экранизации из программы чтения — мифы, былины, сказки и классика. Где есть ссылка, можно сразу смотреть.",
+    archives:[
+      {t:"Фонд диафильмов «my-ussr»", link:"http://my-ussr.ru/images/diafilmy"},
+      {t:"Диафильмы РГДБ (архив)", link:"http://arch.rgdb.ru/xmlui/handle/123456789/27090"}
+    ],
+    items:[
+      {id:"t1", t:"Тесей", theme:"Мифы Древней Греции", link:"https://hd.kinopoisk.ru/film/448b5c0bd5da08f4b5750bd727c607e7?from_block=kp-button-online&watch="},
+      {id:"t2", t:"Разрушение Трои и приключения Одиссея", y:"1998", theme:"Мифы Древней Греции"},
+      {id:"t3", t:"Странствия Одиссея", theme:"Мифы · диафильм"},
+      {id:"t4", t:"Одиссей на острове циклопов", theme:"Мифы · мультфильм"},
+      {id:"t5", t:"Илья Муромец и богатыри", theme:"Русские былины", link:"https://yandex.ru/video/search?filmId=3287739946417496562&text=советский%20мультфильм%20муромец"},
+      {id:"t6", t:"Карлик-нос", theme:"В. Гауф", link:"https://yandex.ru/video/search?filmId=4874586933092043568&text=советский%20мультфильм%20нос"},
+      {id:"t7", t:"Стойкий оловянный солдатик", theme:"Г. Х. Андерсен", link:"https://yandex.ru/video/search?filmId=1661179448735961450&text=советские%20мультфильмы%20андерсен"},
+      {id:"t8", t:"Снежная королева", theme:"Г. Х. Андерсен", link:"https://yandex.ru/video/search?filmId=14841533174768575196&text=советские%20мультфильмы%20сказка%20андерсена"},
+      {id:"t9", t:"Ель", theme:"Г. Х. Андерсен", link:"https://yandex.ru/video/search?filmId=8575604473843591997&text=советские%20мультфильмы%20сказка%20андерсена"},
+      {id:"t10", t:"Свинопас", theme:"Г. Х. Андерсен", link:"https://yandex.ru/video/search?filmId=12487739028615517587&text=советские%20мультфильмы%20сказка%20андерсена"},
+      {id:"t11", t:"Соловей", theme:"Г. Х. Андерсен", link:"https://yandex.ru/video/search?p=1&filmId=3791285687479470693&text=советские%20мультфильмы%20андерсен"},
+      {id:"t12", t:"Ночь перед Рождеством", theme:"Н. В. Гоголь", link:"https://yandex.ru/video/search?filmId=6825494864988357610&text=советский%20мультфильм%20ночь%20перед%20рождеством"},
+      {id:"t13", t:"Мёртвые души (Похождения Чичикова)", theme:"Н. В. Гоголь", link:"https://yandex.ru/video/search?filmId=2807905234158028288&text=советский%20мультфильм%20мертвые%20души"},
+      {id:"t14", t:"Бородино", theme:"М. Ю. Лермонтов · диафильм", link:"http://arch.rgdb.ru/xmlui/handle/123456789/37725#page/18/mode/1up"},
+      {id:"t15", t:"Ашик-Кериб", theme:"М. Ю. Лермонтов · диафильм", link:"http://arch.rgdb.ru/xmlui/handle/123456789/43070#page/4/mode/1up"},
+      {id:"t16", t:"Джельсомино в Стране Лгунов", theme:"Дж. Родари", link:"http://arch.rgdb.ru/xmlui/handle/123456789/27090/discover?rpp=10&page=1&query=родари&group_by=none&etal=0"},
+      {id:"t17", t:"Алиса в Стране чудес", theme:"Л. Кэрролл", link:"https://yandex.ru/video/search?filmId=15389877713615343178&text=советский%20мультфильм%20алиса"},
+      {id:"t18", t:"Алиса в Зазеркалье", theme:"Л. Кэрролл", link:"https://yandex.ru/video/search?filmId=5172384351543486574&text=советский%20мультфильм%20алиса"},
+      {id:"t19", t:"Путешествия Гулливера", theme:"Дж. Свифт", link:"https://yandex.ru/video/search?filmId=7384656366532112729&text=мультфильм%20про%20гулливера%20в%20стране%20лилипутов%20советский"},
+      {id:"t20", t:"Чудесное путешествие Нильса с дикими гусями", theme:"С. Лагерлёф"},
+      {id:"t21", t:"Гаргантюа и Пантагрюэль", theme:"Ф. Рабле", link:"https://yandex.ru/video/search?filmId=8278419080450880386&text=советский%20мультфильм%20гаргантюа"}
+    ]
+  },
+  {
+    key:"mine", ico:"✏️", label:"Моё",
+    title:"Моя полка",
+    blurb:"Добавь сюда то, чего нет в списке: познавательные передачи, документальные фильмы, другие мультфильмы.",
+    items:[]
+  }
+];
+
+/* ----------------------------- Хранилище ----------------------------- */
+const DOC_KEY  = "kino610:doc";
+const SYNC_KEY = "kino610:sync";
+let states = {};    // id -> {s:"planned"|"watched"|"", t:метка времени}
+let custom = [];    // [{id,t,y,link}]
+let customDel = {}; // id -> метка времени (для удалённых своих пунктов)
+let sync = { binId:"", key:"", on:false, busy:false, lastOk:0, err:"", msg:"" };
+let syncPanelOpen = false;
+
+const mem = {};   // память на крайний случай
+// Универсальное хранилище: внутри приложения Claude — window.storage,
+// на обычном сайте (хостинг, Safari на iPhone) — localStorage браузера.
+async function storeGet(key){
+  if(window.storage && window.storage.get){
+    try{ const r = await window.storage.get(key, false); return r ? r.value : null; }catch(e){}
+  }
+  try{ const v = localStorage.getItem(key); if(v != null) return v; }catch(e){}
+  return key in mem ? mem[key] : null;
+}
+async function storeSet(key,val){
+  if(window.storage && window.storage.set){
+    try{ await window.storage.set(key, val, false); return; }catch(e){}
+  }
+  try{ localStorage.setItem(key, val); return; }catch(e){}
+  mem[key] = val;
+}
+async function storeDel(key){
+  if(window.storage && window.storage.delete){
+    try{ await window.storage.delete(key, false); return; }catch(e){}
+  }
+  try{ localStorage.removeItem(key); }catch(e){}
+  delete mem[key];
+}
+
+function saveLocal(){ storeSet(DOC_KEY, JSON.stringify({v:1, states, custom, customDel})); }
+function saveSyncCfg(){ storeSet(SYNC_KEY, JSON.stringify({binId:sync.binId, key:sync.key})); }
+
+/* ----------------------------- Утилиты ----------------------------- */
+const $ = sel => document.querySelector(sel);
+function esc(s){ return String(s==null?"":s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function norm(s){ return String(s||"").toLowerCase().replace(/ё/g,"е"); }
+
+let activeCat = "gold";
+let activeState = "all";
+let query = "";
+
+function allItems(){
+  let arr = [];
+  CATS.forEach(c => { if(c.key !== "mine") arr = arr.concat(c.items); });
+  arr = arr.concat(custom);
+  return arr;
+}
+function catItems(cat){ return cat.key === "mine" ? custom : cat.items; }
+function stateOf(id){ const e = states[id]; return (e && e.s) ? e.s : "todo"; }
+
+function counts(items){
+  let w=0,p=0;
+  items.forEach(it => { const s=stateOf(it.id); if(s==="watched")w++; else if(s==="planned")p++; });
+  return {watched:w, planned:p, total:items.length};
+}
+
+/* ----------------------------- Рендер ----------------------------- */
+function renderProgress(){
+  const c = counts(allItems());
+  const pct = c.total ? Math.round(c.watched / c.total * 100) : 0;
+  $("#fill").style.width = pct + "%";
+  $("#progLabel").textContent = "Посмотрено " + c.watched + " из " + c.total;
+}
+
+function renderTabs(){
+  const tabs = $("#tabs");
+  tabs.innerHTML = CATS.map(c => {
+    const cc = counts(catItems(c));
+    const sel = c.key === activeCat;
+    return `<button class="tab" role="tab" data-cat="${c.key}" aria-selected="${sel}">
+      <span class="tab__ico">${c.ico}</span>
+      <span class="tab__name">${esc(c.label)}</span>
+      <span class="tab__count">${cc.watched}/${cc.total}</span>
+    </button>`;
+  }).join("");
+}
+
+function passFilter(it){
+  if(activeState !== "all" && stateOf(it.id) !== activeState) return false;
+  if(query){
+    const hay = norm(it.t) + " " + norm(it.d) + " " + norm(it.theme) + " " + norm(it.y);
+    if(hay.indexOf(query) === -1) return false;
+  }
+  return true;
+}
+
+function cardHTML(it, isCustom){
+  const s = stateOf(it.id);
+  const cls = "item" + (s==="planned"?" is-planned":"") + (s==="watched"?" is-watched":"");
+  const num = it.n ? `<span class="item__num">№${it.n}</span>` : "";
+  const yr = it.y ? `<span class="yr">${esc(it.y)}</span>` : "";
+  const by = it.d ? `<span class="by">${esc(it.d)}</span>` : (it.theme ? `<span class="by"><b>${esc(it.theme)}</b></span>` : "");
+  const note = it.note ? `<div class="note">${esc(it.note)}</div>` : "";
+  const link = it.link ? `<a class="watch-link" href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.linkLabel || "▶ смотреть")}</a>` : "";
+  const del = isCustom ? `<button class="del" data-del="${esc(it.id)}">удалить</button>` : "";
+  return `<article class="${cls}" data-id="${esc(it.id)}">
+    <span class="flag">В планах</span>
+    <span class="seal"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+    <h3 class="item__title">${num}${esc(it.t)}</h3>
+    <div class="item__meta">${yr}${by}</div>
+    ${note}
+    <div class="item__actions">
+      <button class="act want" data-act="planned" aria-pressed="${s==="planned"}"><span class="i">★</span>Хочу посмотреть</button>
+      <button class="act seen" data-act="watched" aria-pressed="${s==="watched"}"><span class="i">✓</span>Посмотрел</button>
+      ${link}
+    </div>
+    ${del}
+  </article>`;
+}
+
+function renderContent(){
+  const cat = CATS.find(c => c.key === activeCat);
+  const items = catItems(cat);
+  const shown = items.filter(passFilter);
+
+  let html = `<div class="section-head"><h2>${esc(cat.title)}</h2><p>${esc(cat.blurb)}</p></div>`;
+
+  if(cat.archives){
+    html += `<div class="archives">` + cat.archives.map(a =>
+      `<a class="arch" href="${esc(a.link)}" target="_blank" rel="noopener"><span class="t">🗄️</span>${esc(a.t)}</a>`
+    ).join("") + `</div>`;
+  }
+
+  if(cat.key === "mine"){
+    html += `<div class="addbox">
+      <div class="field full"><label for="cT">Название</label><input id="cT" placeholder="Напр., «Галилео», «Хочу всё знать»…"></div>
+      <div class="field"><label for="cY">Год</label><input id="cY" placeholder="—"></div>
+      <div class="field full"><label for="cL">Ссылка (необязательно)</label><input id="cL" placeholder="https://…"></div>
+      <button class="add-btn" id="addBtn">Добавить</button>
+    </div>`;
+  }
+
+  if(shown.length){
+    html += `<div class="grid">` + shown.map(it => cardHTML(it, cat.key === "mine")).join("") + `</div>`;
+  } else {
+    const msg = cat.key === "mine"
+      ? "Здесь пока пусто. Добавь свой фильм или передачу в форме выше."
+      : (activeState !== "all" || query)
+        ? "Ничего не нашлось по этому фильтру. Попробуй сбросить поиск или выбрать «Все»."
+        : "Здесь пока пусто.";
+    html += `<div class="empty"><span class="big">🎟️</span>${esc(msg)}</div>`;
+  }
+
+  $("#content").innerHTML = html;
+}
+
+function renderAll(){ renderProgress(); renderTabs(); renderContent(); renderSyncwrap(); }
+
+/* ----------------------------- События ----------------------------- */
+function setState(id, want){
+  const cur = stateOf(id);
+  const s = (cur === want) ? "" : want;     // повторный клик снимает отметку
+  states[id] = { s: s, t: Date.now() };
+  saveLocal();
+  scheduleSync();
+}
+
+document.addEventListener("click", e => {
+  const tab = e.target.closest("[data-cat]");
+  if(tab){ activeCat = tab.dataset.cat; renderTabs(); renderContent(); return; }
+
+  const chip = e.target.closest("[data-state]");
+  if(chip){
+    activeState = chip.dataset.state;
+    document.querySelectorAll("#stateChips .chip").forEach(c =>
+      c.setAttribute("aria-pressed", c.dataset.state === activeState));
+    renderContent();
+    return;
+  }
+
+  const act = e.target.closest("[data-act]");
+  if(act){
+    const card = act.closest(".item");
+    setState(card.dataset.id, act.dataset.act);
+    renderAll();
+    return;
+  }
+
+  const del = e.target.closest("[data-del]");
+  if(del){
+    const id = del.dataset.del;
+    custom = custom.filter(x => x.id !== id);
+    customDel[id] = Date.now();
+    delete states[id];
+    saveLocal();
+    scheduleSync();
+    renderAll();
+    return;
+  }
+
+  if(e.target.id === "addBtn"){
+    const t = $("#cT").value.trim();
+    if(!t){ $("#cT").focus(); return; }
+    const item = {
+      id: "c" + Date.now().toString(36) + Math.floor(Math.random()*1000),
+      t: t,
+      y: $("#cY").value.trim(),
+      link: $("#cL").value.trim()
+    };
+    custom.push(item);
+    saveLocal();
+    scheduleSync();
+    renderAll();
+    return;
+  }
+
+  if(e.target.id === "syncToggle"){ syncPanelOpen = !syncPanelOpen; renderSyncwrap(); return; }
+  if(e.target.id === "syncConnect"){
+    const b = $("#syncBin"), k = $("#syncKey");
+    connect(b ? b.value : "", k ? k.value : "");
+    return;
+  }
+  if(e.target.id === "syncRefresh"){ doSync(); return; }
+  if(e.target.id === "syncDisconnect"){ disconnect(); return; }
+  if(e.target.id === "syncCopy"){ copySyncLink(); return; }
+
+  if(e.target.id === "reset"){
+    if(confirm("Сбросить все отметки «Хочу посмотреть» и «Посмотрел»? Добавленные тобой фильмы останутся.")){
+      const now = Date.now();
+      allItems().forEach(it => { states[it.id] = { s:"", t:now }; });
+      saveLocal();
+      scheduleSync();
+      renderAll();
+    }
+    return;
+  }
+});
+
+$("#q").addEventListener("input", e => { query = norm(e.target.value); renderContent(); });
+
+/* ----------------------------- Синхронизация (JSONBin) ----------------------------- */
+const JB = "https://api.jsonbin.io/v3/b";
+
+function fmtTime(ts){
+  if(!ts) return "";
+  const d = new Date(ts);
+  return ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2);
+}
+
+async function jbRead(){
+  const r = await fetch(JB + "/" + encodeURIComponent(sync.binId) + "/latest",
+    { headers: { "X-Access-Key": sync.key, "X-Bin-Meta": "false" } });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return await r.json();            // сам документ, без метаданных
+}
+async function jbWrite(doc){
+  const r = await fetch(JB + "/" + encodeURIComponent(sync.binId),
+    { method:"PUT",
+      headers:{ "Content-Type":"application/json", "X-Access-Key": sync.key, "X-Bin-Versioning":"false" },
+      body: JSON.stringify(doc) });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+}
+
+// Слияние по меткам времени: у каждой отметки своя t, побеждает более свежая.
+function mergeDocs(remote, local){
+  remote = remote || {}; local = local || {};
+  const rS = remote.states || {}, lS = local.states || {}, mS = {};
+  new Set(Object.keys(rS).concat(Object.keys(lS))).forEach(id => {
+    const a = rS[id], b = lS[id];
+    if(!a) mS[id] = b; else if(!b) mS[id] = a;
+    else mS[id] = ((a.t||0) >= (b.t||0)) ? a : b;
+  });
+  const rD = remote.customDel || {}, lD = local.customDel || {}, mD = {};
+  new Set(Object.keys(rD).concat(Object.keys(lD))).forEach(id => {
+    mD[id] = Math.max(rD[id]||0, lD[id]||0);
+  });
+  const byId = {};
+  (remote.custom || []).forEach(it => { if(it && it.id) byId[it.id] = it; });
+  (local.custom  || []).forEach(it => { if(it && it.id) byId[it.id] = it; });
+  const mC = Object.keys(byId).map(k => byId[k]).filter(it => !(it.id in mD));
+  return { states:mS, custom:mC, customDel:mD };
+}
+
+const stripDoc = d => JSON.stringify({ states:d.states||{}, custom:d.custom||[], customDel:d.customDel||{} });
+let syncTimer = null;
+function scheduleSync(){ if(!sync.on) return; clearTimeout(syncTimer); syncTimer = setTimeout(doSync, 1200); }
+
+async function doSync(){
+  if(!sync.on || sync.busy) return;
+  sync.busy = true; sync.err = ""; renderSyncwrap();
+  try{
+    let remote = null;
+    try{ remote = await jbRead(); }
+    catch(e){ if(("" + e.message).indexOf("404") === -1) throw e; }   // 404 = пустая новая коробка
+    const merged = mergeDocs(remote, { states, custom, customDel });
+    states = merged.states; custom = merged.custom; customDel = merged.customDel;
+    saveLocal();
+    if(!remote || stripDoc(merged) !== stripDoc(remote)){
+      await jbWrite({ v:1, updatedAt: Date.now(), states, custom, customDel });
+    }
+    sync.lastOk = Date.now();
+    renderAll();
+  }catch(e){
+    const m = "" + e.message;
+    sync.err = (m.indexOf("401")>-1 || m.indexOf("403")>-1 || m.indexOf("422")>-1)
+      ? "проверь Bin ID и Access Key"
+      : (m.indexOf("404")>-1 ? "коробка не найдена" : "нет связи, попробую позже");
+  }finally{
+    sync.busy = false; renderSyncwrap();
+  }
+}
+
+async function connect(binId, key){
+  binId = (binId||"").trim(); key = (key||"").trim();
+  if(!binId || !key){ sync.err = "введите Bin ID и Access Key"; renderSyncwrap(); return; }
+  sync.binId = binId; sync.key = key; sync.on = true; sync.err = "";
+  saveSyncCfg();
+  await doSync();
+  if(!sync.err) syncPanelOpen = false;
+  renderSyncwrap();
+}
+function disconnect(){
+  sync.on = false; sync.binId = ""; sync.key = ""; sync.err = ""; sync.lastOk = 0;
+  storeDel(SYNC_KEY);
+  renderSyncwrap();
+}
+
+function syncLink(){
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ b:sync.binId, k:sync.key }))));
+  return location.href.split("#")[0] + "#sync=" + payload;
+}
+function copySyncLink(){
+  const link = syncLink();
+  const done = () => { sync.msg = "Ссылка скопирована — открой её на втором телефоне"; renderSyncwrap();
+    setTimeout(() => { sync.msg = ""; renderSyncwrap(); }, 4000); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done, () => window.prompt("Скопируй ссылку:", link));
+  } else { window.prompt("Скопируй ссылку:", link); }
+}
+function parseSyncHash(){
+  const m = location.hash.match(/sync=([^&]+)/);
+  if(m){
+    try{ const o = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+      if(o.b && o.k){ sync.binId = o.b; sync.key = o.k; sync.on = true; saveSyncCfg(); } }catch(e){}
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+}
+
+function renderSyncwrap(){
+  const wrap = $("#syncwrap");
+  if(!wrap) return;
+  let cls = "off", txt = "Синхронизация выключена";
+  if(sync.busy){ cls = "busy"; txt = "Синхронизирую…"; }
+  else if(sync.err){ cls = "err"; txt = "Ошибка: " + sync.err; }
+  else if(sync.on){ cls = "ok"; txt = "Синхронизировано" + (sync.lastOk ? " · " + fmtTime(sync.lastOk) : ""); }
+
+  let html = `<div class="syncbar">
+    <span class="syncpill ${cls}">☁ ${esc(txt)}</span>
+    <button class="syncbtn ghost" id="syncToggle">${syncPanelOpen ? "Скрыть" : (sync.on ? "Настройки" : "Включить синхронизацию")}</button>
+  </div>`;
+
+  if(syncPanelOpen && sync.on){
+    html += `<div class="syncpanel">
+      <p class="synchelp">Этот телефон подключён. Чтобы добавить второй — открой на нём ссылку ниже, и они начнут показывать одни и те же галочки.</p>
+      <div class="syncrow">
+        <button class="syncbtn" id="syncCopy">Ссылка для второго телефона</button>
+        <button class="syncbtn ghost" id="syncRefresh">Обновить сейчас</button>
+        <button class="syncbtn danger" id="syncDisconnect">Отключить</button>
+      </div>
+      ${sync.msg ? `<p class="syncok">${esc(sync.msg)}</p>` : ""}
+    </div>`;
+  } else if(syncPanelOpen){
+    html += `<div class="syncpanel">
+      <p class="synchelp">Вставь <b>Bin ID</b> и <b>Access Key</b> с сайта jsonbin.io (как их получить — в инструкции рядом). Второй телефон вводить ничего не будет — подключишь его одной ссылкой.</p>
+      <div class="syncfields">
+        <input id="syncBin" placeholder="Bin ID" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <input id="syncKey" placeholder="Access Key" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="syncbtn" id="syncConnect">Подключить</button>
+      </div>
+      ${sync.err ? `<p class="syncerr">${esc(sync.err)}</p>` : ""}
+    </div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+/* ----------------------------- Старт ----------------------------- */
+// Рисуем интерфейс сразу — он работает даже без сети и без сохранения.
+function withTimeout(p, ms){
+  return Promise.race([ p, new Promise(res => setTimeout(() => res(null), ms)) ]);
+}
+renderAll();
+
+(async function boot(){
+  // локальные данные этого телефона
+  const raw = await withTimeout(storeGet(DOC_KEY), 1500);
+  if(raw){ try{ const d = JSON.parse(raw); states = d.states||{}; custom = d.custom||[]; customDel = d.customDel||{}; }catch(e){} }
+  for(const k in states){ if(typeof states[k] === "string") states[k] = { s: states[k], t: 0 }; } // миграция
+
+  // настройки синхронизации
+  const rawCfg = await withTimeout(storeGet(SYNC_KEY), 1500);
+  if(rawCfg){ try{ const c = JSON.parse(rawCfg); sync.binId = c.binId||""; sync.key = c.key||""; sync.on = !!(sync.binId && sync.key); }catch(e){} }
+  parseSyncHash();   // ссылка #sync=... со второго телефона
+
+  renderAll();
+  if(sync.on) doSync();
+})();
+
+// Сходимся при возвращении на вкладку и раз в минуту, пока вкладка открыта.
+document.addEventListener("visibilitychange", () => { if(!document.hidden) doSync(); });
+window.addEventListener("focus", () => doSync());
+setInterval(() => { if(sync.on && !document.hidden) doSync(); }, 60000);
+</script>
+</body>
+</html>
