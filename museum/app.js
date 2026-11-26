@@ -222,6 +222,7 @@ function maskSent(e) {
   const s = e.sent.replace(/[А-Яа-яЁё\-]+/g, w => { if (!done && norm(w).startsWith(st)) { done = true; return '…'; } return w; });
   return done ? s : e.gap.replace(/\[.+?\]/, '…');
 }
+const razy = n => n + ' ' + (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'раза' : 'раз');
 const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 
 /* ---------- запись результата ---------- */
@@ -307,7 +308,7 @@ function hallsHTML() {
     if (!qs.length) return `<div class="panel"><h2>${h.icon} ${esc(h.name)}</h2><p class="muted">Зал готовится: квизы появятся здесь.</p></div>`;
     return `<div class="panel" id="hall-${h.id}"><h2>${h.icon} ${esc(h.name)}</h2>${barHTML(st)}${legendHTML()}
       ${qs.map(q => { const s = quizStatus(q); const r = S.qz[q.id];
-        const why = s.st === 'new' ? (q.after && !s.ready ? 'Откроется завтра — после «' + QZM[q.after].title + '»' : 'Ещё не пройден') : s.st === 'locked' ? 'Сначала — «' + QZM[q.after].title + '»' : s.st === 'due' ? 'Пора повторить · пройден ' + r.n + ' раз' : 'Пройден ' + r.n + ' раз · повтор ' + fmtIn(r.d);
+        const why = s.st === 'new' ? (q.after && !s.ready ? 'Откроется завтра — после «' + QZM[q.after].title + '»' : 'Ещё не пройден') : s.st === 'locked' ? 'Сначала — «' + QZM[q.after].title + '»' : s.st === 'due' ? 'Пора повторить · пройден ' + razy(r.n) : 'Пройден ' + razy(r.n) + ' · повтор ' + fmtIn(r.d);
         return qcardHTML({ q, why }, s.st === 'new' || s.st === 'locked' ? 'Открыть' : 'Пройти снова'); }).join('')}</div>`; }).join('');
 }
 function fmtIn(d) { const n = d - TODAY(); return n <= 0 ? 'сегодня' : n === 1 ? 'завтра' : 'через ' + n + ' дн.'; }
@@ -336,7 +337,7 @@ function curHTML() {
       return `<tr><td>${esc(h.name)}</td><td>${rs.length}/${ids.length}</td><td>${rs.filter(r => r.b >= 3).length}</td><td>${rs.filter(r => r.b === 5).length}</td><td>${ok + bad ? Math.round(ok / (ok + bad) * 100) + '%' : '—'}</td></tr>`; }).join('')}</table>
     <h3>Трудные экспонаты</h3>${hard.length ? `<table><tr><th>Экспонат</th><th>Ошибок</th><th>Ступень</th><th>Следующая встреча</th></tr>${hard.map(([i, r]) => `<tr><td>${esc(label(EXM[i]))}</td><td>${r.bad}</td><td>${BOX[r.b].n}</td><td>${fmtIn(r.d)}</td></tr>`).join('')}</table>` : '<p class="muted">Пока нет.</p>'}
     <h3>Нагрузка на неделю вперёд</h3><p>${up.map((n, i) => `<span class="tag">${['завтра', '+2', '+3', '+4', '+5', '+6', '+7'][i]}: ${n}</span>`).join(' ')}</p>
-    <h3>Квизы</h3><table><tr><th>Квиз</th><th>Пройден</th><th>Оценка</th><th>Повтор</th></tr>${C.quizzes.map(q => { const r = S.qz[q.id]; return `<tr><td>${esc(q.title)}</td><td>${r ? r.n + ' раз, ' + ds(r.last) : '—'}</td><td>${r ? { easy: 'легко', ok: 'с ошибками', hard: 'трудно' }[r.rate] : ''}</td><td>${r ? fmtIn(r.d) : ''}</td></tr>`; }).join('')}</table>
+    <h3>Квизы</h3><table><tr><th>Квиз</th><th>Пройден</th><th>Оценка</th><th>Повтор</th></tr>${C.quizzes.map(q => { const r = S.qz[q.id]; return `<tr><td>${esc(q.title)}</td><td>${r ? razy(r.n) + ', ' + ds(r.last) : '—'}</td><td>${r ? { easy: 'легко', ok: 'с ошибками', hard: 'трудно' }[r.rate] : ''}</td><td>${r ? fmtIn(r.d) : ''}</td></tr>`; }).join('')}</table>
     <h3>Настройки</h3><label><input type="checkbox" data-set="freeze" ${S.settings.freeze ? 'checked' : ''}> Летняя пауза 1 июня – 31 августа 2027 (интервалы замораживаются)</label></div>`;
 }
 function label(e) { return e.t === 'event' ? e.date + ' — ' + e.name : e.t === 'order' ? e.a + ' / ' + e.b : e.t === 'phrase' ? e.phrase : e.t === 'poem' ? e.title + ' (' + e.auth + ')' : e.t === 'work' ? e.work + ' — ' + e.auth : e.t === 'writer' ? e.name : e.name + ' — ' + e.work; }
