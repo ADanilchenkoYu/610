@@ -194,6 +194,19 @@ function question(id, box) {
     Q.reveal = e.name + ' (ключ — «' + e.mkey + '»)'; Q.fact = e.hero;
     if (F <= 2) { Q.kind = 'Узнай писателя'; Q.prompt = 'Кто написал? ' + cap(e.hero) + (F === 2 ? ' Подсказка-ключ: «' + e.mkey + '».' : ''); Q.options = pickDistr(e.name, [others.map(x => x.name)]); Q.answer = e.name; }
     else { Q.kind = 'Слово-ключ'; Q.prompt = (F === 3 ? 'Ключ — «' + e.mkey + '». ' : '') + cap(e.hero) + '. Кто автор? Напиши фамилию.'; Q.keys = e.key; }
+  } else if (e.t === 'event') {
+    const R = n => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII'][n];
+    const c = Math.floor((e.year - 1) / 100) + 1; const evs = others.filter(x => x.t === 'event');
+    Q.reveal = e.date + ' — ' + e.name; Q.fact = e.fact;
+    if (F === 1) { Q.kind = 'Какой век?'; Q.typed = false; Q.prompt = 'В каком веке было это событие?'; Q.big = e.name;
+      Q.options = pickDistr(R(c) + ' век', [[c - 1, c + 1, c + 2, c - 2].filter(x => x > 0 && x < 22).map(x => R(x) + ' век')]); Q.answer = R(c) + ' век'; }
+    else if (F === 2 || F === 4) { const o = F === 2 ? evs[Math.floor(Math.random() * evs.length)] : evs.slice().sort((x, y) => Math.abs(x.year - e.year) - Math.abs(y.year - e.year))[0];
+      Q.kind = F === 2 ? 'Что раньше?' : 'Что раньше? Соседи по ленте'; Q.typed = false; Q.prompt = 'Что было раньше?';
+      Q.options = shuffle([e.name, o.name]); Q.answer = e.year < o.year ? e.name : o.name; Q.reveal = e.date + ' — ' + e.name + '; ' + o.date + ' — ' + o.name; }
+    else { Q.kind = 'Вспомни год'; Q.typed = true; Q.exact = String(e.year); Q.prompt = 'В каком году? Напиши год цифрами.'; Q.big = e.name; Q.keys = [String(e.year)]; }
+  } else if (e.t === 'order') {
+    Q.kind = F >= 3 ? 'Что раньше? Без подсказок' : 'Что раньше?'; Q.typed = false; Q.prompt = 'Что появилось или случилось раньше?';
+    Q.options = shuffle([e.a, e.b]); Q.answer = e.ans === 0 ? e.a : e.b; Q.reveal = 'Раньше: ' + Q.answer; Q.fact = e.fact;
   } else if (e.t === 'phrase') {
     Q.reveal = e.phrase + ' — ' + e.mean; Q.fact = e.fact;
     if (F === 1) { Q.kind = 'Пойми выражение'; Q.prompt = 'Что значит:'; Q.big = '«' + e.phrase + '»'; Q.sub = e.sent; Q.options = pickDistr(e.mean, [others.map(x => x.mean)]); Q.answer = e.mean; }
@@ -326,7 +339,7 @@ function curHTML() {
     <h3>Квизы</h3><table><tr><th>Квиз</th><th>Пройден</th><th>Оценка</th><th>Повтор</th></tr>${C.quizzes.map(q => { const r = S.qz[q.id]; return `<tr><td>${esc(q.title)}</td><td>${r ? r.n + ' раз, ' + ds(r.last) : '—'}</td><td>${r ? { easy: 'легко', ok: 'с ошибками', hard: 'трудно' }[r.rate] : ''}</td><td>${r ? fmtIn(r.d) : ''}</td></tr>`; }).join('')}</table>
     <h3>Настройки</h3><label><input type="checkbox" data-set="freeze" ${S.settings.freeze ? 'checked' : ''}> Летняя пауза 1 июня – 31 августа 2027 (интервалы замораживаются)</label></div>`;
 }
-function label(e) { return e.t === 'phrase' ? e.phrase : e.t === 'poem' ? e.title + ' (' + e.auth + ')' : e.t === 'work' ? e.work + ' — ' + e.auth : e.t === 'writer' ? e.name : e.name + ' — ' + e.work; }
+function label(e) { return e.t === 'event' ? e.date + ' — ' + e.name : e.t === 'order' ? e.a + ' / ' + e.b : e.t === 'phrase' ? e.phrase : e.t === 'poem' ? e.title + ' (' + e.auth + ')' : e.t === 'work' ? e.work + ' — ' + e.auth : e.t === 'writer' ? e.name : e.name + ' — ' + e.work; }
 
 function bind() {
   const ff = document.getElementById('famf'); if (ff) ff.onsubmit = ev => { ev.preventDefault(); connectFamily(document.getElementById('fami').value); };
@@ -359,7 +372,7 @@ function ratePanel(qid, justOpened) {
   ov.querySelector('#rsave').onclick = () => { rateQuiz(qid, rate, [...missed]); ov.remove(); toast('Записано! Экспонаты «' + q.title + '» в музее.'); render(); };
   ov.querySelector('#rlater').onclick = () => { S.pending = null; save(); ov.remove(); };
 }
-function short(e) { return e.t === 'phrase' ? e.phrase : e.t === 'poem' ? e.title : e.t === 'work' ? e.work : e.name; }
+function short(e) { return e.t === 'event' ? e.name : e.t === 'order' ? e.a + ' или ' + e.b : e.t === 'phrase' ? e.phrase : e.t === 'poem' ? e.title : e.t === 'work' ? e.work : e.name; }
 function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500); }
 
 /* ---------- экскурсия ---------- */
@@ -376,10 +389,10 @@ function showQ() {
     <div class="panel qbox"><div class="kind">${esc(HALLM[Q.e.h].icon + ' ' + HALLM[Q.e.h].name)} · ${esc(Q.kind)} · ступень «${BOX[r.b].n}»${r.rep ? ' · ремонт' : ''}</div>
     <div class="prompt">${esc(Q.prompt)}</div>${Q.big ? `<div class="big">${esc(Q.big)}</div>` : ''}${Q.sub ? `<div class="muted" style="font-style:italic">${esc(Q.sub)}</div>` : ''}
     ${imgSrc(Q.img) ? `<div><img src="${esc(imgSrc(Q.img))}" alt=""></div>` : ''}${Q.lines ? `<pre>${esc(Q.lines)}</pre>` : ''}
-    ${Q.typed ? `<form class="typed" id="tf"><input id="ti" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="напиши ответ" aria-label="Ответ"><button class="btn">Проверить</button></form><div style="margin-top:8px"><button class="btn ghost small" id="idk">Не помню</button></div>`
+    ${Q.typed ? `<form class="typed" id="tf"><input id="ti" ${Q.exact ? 'inputmode="numeric" maxlength="4"' : ''} autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="напиши ответ" aria-label="Ответ"><button class="btn">Проверить</button></form><div style="margin-top:8px"><button class="btn ghost small" id="idk">Не помню</button></div>`
       : `<div class="opts">${Q.options.map((o, k) => `<button class="opt" data-k="${k}">${esc(o)}</button>`).join('')}</div>`}
     <div id="fbx"></div></div></div>`;
-  if (Q.typed) { const inp = $('#ti'); inp.focus(); $('#tf').onsubmit = ev => { ev.preventDefault(); if (inp.value.trim()) answer(typedOk(inp.value, Q.keys), inp.value); }; $('#idk').onclick = () => answer(false, ''); }
+  if (Q.typed) { const inp = $('#ti'); inp.focus(); $('#tf').onsubmit = ev => { ev.preventDefault(); if (inp.value.trim()) answer(Q.exact ? inp.value.replace(/\D/g, '') === Q.exact : typedOk(inp.value, Q.keys), inp.value); }; $('#idk').onclick = () => answer(false, ''); }
   else document.querySelectorAll('.opt').forEach(b => b.onclick = () => { const v = Q.options[+b.dataset.k]; document.querySelectorAll('.opt').forEach(x => { x.disabled = true; if (Q.options[+x.dataset.k] === Q.answer) x.classList.add('right'); }); if (v !== Q.answer) b.classList.add('wrong'); answer(v === Q.answer, v); });
 }
 function answer(ok, given) {

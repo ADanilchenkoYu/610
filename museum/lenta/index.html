@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лента времени России</title>
+<style>
+@font-face{font-family:"Lora";src:url("../fonts/Lora-Variable.ttf") format("truetype");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Lora";src:url("../fonts/Lora-Italic-Variable.ttf") format("truetype");font-weight:400 700;font-style:italic;font-display:swap}
+:root{--wall:#5c1e24;--gold:#d9b35e;--hi:#f3d98f;--lo:#8a6224;--paper:#f6eedb;--ink:#2b1a10;--muted:#6b5440;--ok:#2f7a45;--bad:#b3412e;--warn:#b5641c;--blue:#2f4f6f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Lora",Georgia,serif;color:var(--ink);background:repeating-linear-gradient(90deg,#5c1e24 0 44px,#621f26 44px 88px);font-size:18px;min-height:100vh}
+button,input{font:inherit}
+header{background:linear-gradient(#3a1216,#2c0d10);border-bottom:5px solid var(--gold);box-shadow:0 3px 0 var(--lo);padding:10px 18px;color:var(--hi)}
+h1{margin:0;font-size:clamp(20px,2.6vw,30px);letter-spacing:.05em;text-transform:uppercase}
+h1 small{display:block;font-size:.5em;letter-spacing:.08em;color:var(--gold);font-style:italic;text-transform:none;font-weight:400}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav button{background:transparent;border:1px solid var(--gold);color:var(--hi);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:14px}
+nav button[aria-current="true"]{background:var(--paper);color:var(--wall);font-weight:700}
+nav button .st{margin-left:4px;color:var(--gold)}
+main{max-width:920px;margin:0 auto;padding:18px 14px 60px}
+.panel{background:var(--paper);border:5px solid var(--gold);border-radius:14px;box-shadow:0 0 0 2px var(--lo),0 14px 34px rgba(0,0,0,.45);padding:20px 22px;margin-bottom:18px}
+.panel h2{margin:0 0 6px;color:var(--wall);font-size:clamp(21px,2.5vw,28px)}
+.lead{font-size:clamp(16px,1.8vw,19px);line-height:1.45;margin:4px 0 10px}
+.muted{color:var(--muted)}
+.btn{cursor:pointer;border-radius:10px;padding:10px 18px;background:linear-gradient(var(--hi),var(--gold));color:#3a1a06;border:1px solid var(--lo);font-weight:700;box-shadow:0 2px 0 var(--lo)}
+.btn.big{font-size:clamp(18px,2.2vw,22px);padding:14px 26px}
+.btn.ghost{background:transparent;box-shadow:none;border-color:var(--wall);color:var(--wall)}
+.btn:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* лента */
+.rwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px -4px 2px;padding:0 4px}
+.ribbon{width:100%;min-width:680px;height:auto;display:block}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 14px;font-size:14px;margin-top:6px}
+.legend span b{display:inline-block;min-width:66px;color:var(--wall)}
+/* карточки событий */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.ev{cursor:pointer;text-align:left;background:#fffaf0;border:3px solid var(--gold);border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.3;color:var(--ink)}
+.ev .y{display:block;font-weight:700;color:var(--wall);font-size:20px}
+.ev.done{opacity:.35;cursor:default;border-style:dashed}
+.shake{animation:sh .4s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.info{margin-top:12px;padding:12px 16px;border-radius:12px;background:#fff3d6;border:2px solid var(--gold);font-size:clamp(16px,1.7vw,18px);line-height:1.45;min-height:48px}
+.info b{color:var(--wall)}
+.fb{margin-top:12px;padding:12px 16px;border-radius:12px;font-size:clamp(16px,1.7vw,18px);line-height:1.45}
+.fb.ok{background:#e4f3e6;border:2px solid var(--ok)}.fb.bad{background:#f9e3de;border:2px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.dots i{width:13px;height:13px;border-radius:50%;background:#e4d6b4;border:2px solid var(--gold)}
+.dots i.ok{background:var(--ok)}.dots i.bad{background:var(--bad)}.dots i.cur{background:var(--hi)}
+.q{font-size:clamp(20px,2.4vw,26px);text-align:center;margin:8px 0}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;margin-top:10px}
+.pair .or{align-self:center;font-style:italic;color:var(--muted)}
+.choice{cursor:pointer;background:#fffaf0;border:3px solid var(--gold);border-radius:14px;padding:18px 12px;font-size:clamp(18px,2.2vw,23px);font-weight:700;color:var(--ink);line-height:1.25}
+.choice:hover:not(:disabled){background:#fff2cf}
+.choice.right{background:#dff1e2;border-color:var(--ok)}.choice.wrong{background:#f6dcd6;border-color:var(--bad)}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.opts .choice{padding:14px 6px;text-align:center;font-size:clamp(20px,2.6vw,28px)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.match .col{display:flex;flex-direction:column;gap:8px}
+.mi{cursor:pointer;text-align:left;background:#fffaf0;border:3px solid var(--gold);border-radius:12px;padding:10px 12px;font-size:16px;color:var(--ink);line-height:1.3}
+.mi.sel{border-color:var(--blue);background:#e3ecf5}
+.mi.done{background:#dff1e2;border-color:var(--ok);cursor:default}
+.mi .y{font-weight:700;color:var(--ok)}
+.story{font-size:clamp(19px,2.3vw,24px);line-height:1.9;text-align:center;margin:10px 0}
+.frag{cursor:pointer;display:inline;background:none;border:0;border-bottom:3px dotted var(--gold);padding:0 2px;color:var(--ink);font-size:inherit;line-height:inherit}
+.frag:hover:not(:disabled){background:#fff2cf}
+.frag.right{background:#f6dcd6;border-bottom:3px solid var(--bad);text-decoration:underline wavy var(--bad)}
+.frag.wrongpick{background:#e9e1cf}
+.frag.okpick{background:#dff1e2;border-bottom-color:var(--ok)}
+.summary td,.summary th{padding:6px 8px;border-bottom:1px solid #e2d2ad;text-align:left}
+.summary{border-collapse:collapse;width:100%;font-size:16px}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--wall);font-weight:700}
+details li{margin:4px 0;line-height:1.4}
+input.year{font-size:22px;width:120px;padding:8px 10px;border:3px solid var(--gold);border-radius:10px;background:#fffdf6}
+@media (max-width:560px){.opts{grid-template-columns:repeat(2,1fr)}.pair{grid-template-columns:1fr}.pair .or{text-align:center}.panel{padding:16px 14px}
+ header{padding:8px 12px}h1{font-size:18px}h1 small{display:none}
+ nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}nav button{white-space:nowrap;flex:0 0 auto}
+ .cards{grid-template-columns:repeat(2,1fr);gap:8px}.ev{font-size:14px;padding:8px 9px}.ev .y{font-size:17px}
+ .match{gap:6px}.mi{font-size:14px;padding:8px 8px}main{padding:12px 10px 50px}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../" style="float:right;margin-left:10px;text-decoration:none;border:1px solid #d9b35e;color:#f3d98f;border-radius:8px;padding:5px 10px;font-size:15px">← Музей</a>
+  <h1>Лента времени России<small>не даты, а порядок: что раньше, что позже и кто с кем жил в одно время</small></h1>
+  <nav id="nav" aria-label="Залы квиза"></nav>
+</header>
+<main id="main"></main>
+<script>
+'use strict';
+/* ====== СОБЫТИЯ-ЯКОРЯ. Даты сверены; «по летописи» — где год условный ====== */
+const ANCH=[
+ {id:'rurik',y:862,d:'862',t:'Призвание Рюрика',s:'По летописи, в 862 году новгородцы позвали на княжение варяга Рюрика. Отсюда принято вести счёт русской истории. Год взят из летописи, поэтому он условный.'},
+ {id:'kresch',y:988,d:'988',t:'Крещение Руси',s:'Князь Владимир крестил Русь. Вместе с христианством пришли каменные храмы, иконы и книги на славянском языке.'},
+ {id:'led',y:1242,d:'1242',t:'Ледовое побоище',s:'Александр Невский разбил рыцарей на льду Чудского озера. А за два года до этого, в 1240-м, он победил шведов на Неве — отсюда прозвище «Невский».'},
+ {id:'kulik',y:1380,d:'1380',t:'Куликовская битва',s:'Дмитрий Донской победил войско Мамая на Куликовом поле. Иго ещё не кончилось, но стало ясно: Орду можно победить.'},
+ {id:'ugra',y:1480,d:'1480',t:'Стояние на Угре — конец ордынского ига',s:'Войска Ивана III и хана Ахмата стояли друг против друга на реке Угре, и хан ушёл. Ига больше нет — ровно через 100 лет после Куликовской битвы.'},
+ {id:'roman',y:1613,d:'1613',t:'Первый царь из Романовых',s:'После Смуты ополчение Минина и Пожарского освободило Москву (1612), а в 1613 году царём выбрали Михаила Романова. Романовы правили до 1917 года — 304 года.'},
+ {id:'spb',y:1703,d:'1703',t:'Основание Санкт-Петербурга',s:'Пётр I основал Петербург на Неве. Около 1712 года город стал столицей и оставался ею больше двухсот лет.'},
+ {id:'1812',y:1812,d:'1812',t:'Отечественная война с Наполеоном, Бородино',s:'Наполеон вторгся в Россию, была Бородинская битва и пожар Москвы, а потом армия Наполеона отступила. Пушкину тогда было 13 лет.'},
+ {id:'krep',y:1861,d:'1861',t:'Отмена крепостного права',s:'Александр II отменил крепостное право: крестьян больше нельзя было продавать и покупать.'},
+ {id:'pobeda',y:1945,d:'1945',t:'Победа в Великой Отечественной войне',s:'Великая Отечественная война шла с 1941 по 1945 год. 9 мая 1945 года — День Победы.'},
+ {id:'gagarin',y:1961,d:'1961',t:'Полёт Гагарина в космос',s:'12 апреля 1961 года Юрий Гагарин первым в мире полетел в космос — ровно через 100 лет после отмены крепостного права.'},
+];
+const AM=Object.fromEntries(ANCH.map(a=>[a.id,a]));
+/* ====== «ЧТО РАНЬШЕ?» — формат ПРОгимназии и экзамена 2021 № 6 ====== */
+const PAIRS=[
+ ['Новгород','Москва',0,'Новгород упоминается в летописи с IX века, Москва — впервые в 1147 году. Москва моложе почти на 300 лет.'],
+ ['Бронза','Сталь',0,'Бронзовый век — тысячи лет до нашей эры. Железо, а потом и прочную сталь научились делать позже.'],
+ ['Готика','Барокко',0,'Готические соборы строили в Средние века (XII–XV века), барокко — XVII–XVIII века: так строил Растрелли Зимний дворец.'],
+ ['Исаакиевский собор','Спас на Крови',0,'Исаакий строили в 1818–1858 годах, Спас на Крови — в 1883–1907, на месте гибели Александра II.'],
+ ['Петергоф','Павловск',0,'Петергоф начал строить Пётр I в начале XVIII века. Павловск Екатерина II начала строить для сына Павла в 1777 году.'],
+ ['Христианство','Ислам',0,'Христианство появилось в I веке, ислам — в VII веке.'],
+ ['Арбалет','Мушкет',0,'Арбалетом стреляли ещё в древности и в Средние века, мушкет — огнестрельное оружие XVI–XVII веков.'],
+ ['Опера','Джаз',0,'Первые оперы написаны около 1600 года в Италии, джаз появился около 1900 года в Америке.'],
+ ['Ледовое побоище','Куликовская битва',0,'Ледовое побоище — 1242, Куликовская битва — 1380.'],
+ ['Полтавская битва','Бородинская битва',0,'Полтава — 1709 (Пётр I и шведы), Бородино — 1812 (Кутузов и Наполеон).'],
+ ['Основан Эрмитаж','Война с Наполеоном',0,'Эрмитаж основала Екатерина II в 1764 году — почти за полвека до 1812-го.'],
+ ['Отмена крепостного права','Первая железная дорога в России',1,'Ловушка! Первая железная дорога (Петербург — Царское Село) открылась в 1837 году, а крепостное право отменили в 1861-м.'],
+ ['Родился Пушкин','Бородинская битва',0,'Пушкин родился в 1799 году, Бородино — 1812. В год войны Пушкину было 13 лет.'],
+ ['Колумб открыл Америку','Стояние на Угре',1,'Стояние на Угре — 1480, Колумб доплыл до Америки в 1492-м. Ига на Руси уже 12 лет как не было.'],
+ ['Победа в Великой Отечественной','Полёт Гагарина',0,'Победа — 1945, Гагарин — 1961.'],
+];
+/* ====== ВЕК ====== */
+const CENT=[[862,9],[988,10],[1242,13],[1380,14],[1480,15],[1613,17],[1703,18],[1812,19],[1900,19],[1961,20],[2000,20],[2026,21]];
+const ROM=n=>['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI','XXII'][n];
+const centuryOf=y=>Math.floor((y-1)/100)+1;
+/* ====== РИФМЫ ВЕКОВ (мнемоника: события, разделённые ровно сотней лет, и одна пара-«близнец») ====== */
+const RHYMES=[
+ {a:['Куликовская битва',1380],b:['Стояние на Угре: конец ига',1480],tip:'1380 → 1480: от первой большой победы над Ордой до конца ига прошло ровно 100 лет.'},
+ {a:['Петербург становится столицей',1712],b:['Бородинская битва',1812],tip:'Около 1712 → 1812: через сто лет после переезда столицы в Петербург — война с Наполеоном.'},
+ {a:['Отмена крепостного права',1861],b:['Полёт Гагарина',1961],tip:'1861 → 1961: за сто лет — от крестьян, которых продавали и покупали, до полёта в космос.'},
+ {a:['Невская битва со шведами',1240],b:['Ледовое побоище',1242],tip:'1240 и 1242: два подвига Александра Невского с разницей в два года.'},
+];
+/* ====== «ОШИБКА ИСТОРИКА» — формат экзамена 2026 № 6: найти и подчеркнуть ошибочное место ====== */
+const STORIES=[
+ {f:['Дмитрий Донской','перед Куликовской битвой','послал гонца в Санкт-Петербург','за подмогой.'],e:2,why:'Петербург основан в 1703 году — через 323 года после Куликовской битвы.'},
+ {f:['Пётр I','гулял по Летнему саду','и заходил в Эрмитаж','посмотреть на картины.'],e:2,why:'Летний сад заложил сам Пётр, а Эрмитаж основала Екатерина II в 1764 году — почти через 40 лет после смерти Петра.'},
+ {f:['Александр Невский','собрал дружину','и приехал на Чудское озеро','на поезде.'],e:3,why:'Первая железная дорога в России появилась только в 1837 году — через 600 лет.'},
+ {f:['В 1812 году','тринадцатилетний Пушкин','учился в Царскосельском лицее','и видел, как полки уходят на войну.'],e:-1,why:'Ошибки нет: Пушкин поступил в лицей в 1811 году, а в 1812-м ему было 13 лет.'},
+ {f:['Первопечатник Иван Фёдоров','напечатал книгу «Апостол»','и подарил её','князю Рюрику.'],e:3,why:'«Апостол» вышел в 1564 году, а Рюрик жил в IX веке — на 700 лет раньше.'},
+ {f:['Солдаты Кутузова','после Бородинской битвы','слушали по радио','новости из Москвы.'],e:2,why:'Радио изобрели в конце XIX века (Попов, 1895) — почти через сто лет после Бородино.'},
+ {f:['Екатерина II','купила картины для Эрмитажа','и рассказала об этом Вольтеру','по телефону.'],e:3,why:'Екатерина переписывалась с Вольтером письмами. Телефон изобрели в 1876 году — через 80 лет после её смерти.'},
+ {f:['Дмитрий Донской','победил на Куликовом поле,','а ровно через сто лет','на Угре закончилось ордынское иго.'],e:-1,why:'Ошибки нет: 1380 и 1480 — ровно сто лет.'},
+];
+/* ====== состояние ====== */
+const ROUNDS=[
+ {id:'anch',name:'1. Якоря'},{id:'pair',name:'2. Что раньше?'},{id:'cent',name:'3. Какой век?'},
+ {id:'rhyme',name:'4. Рифмы веков'},{id:'err',name:'5. Ошибка историка'},{id:'mem',name:'6. Лента по памяти'}];
+let cur='intro', res={}, missed=new Map();
+const missedEx=new Set();
+const exOfAnchor=id=>'h'+String(ANCH.findIndex(a=>a.id===id)+1).padStart(2,'0');
+const miss=(k,label,ex)=>{missed.set(k,label); if(ex) missedEx.add(ex);};
+const store=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function nav(){ $('#nav').innerHTML=`<button data-r="intro" aria-current="${cur==='intro'}">Начало</button>`+ROUNDS.map(r=>`<button data-r="${r.id}" aria-current="${cur===r.id}">${r.name}${res[r.id]?`<span class="st">${res[r.id].ok}/${res[r.id].n}</span>`:''}</button>`).join('')+`<button data-r="final" aria-current="${cur==='final'}">Итог</button>`;
+  document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.r)); }
+function go(r){cur=r;nav();({intro,anch,pair,cent,rhyme,err,mem,final})[r]();scrollTo(0,0)}
+function nextRound(){const i=ROUNDS.findIndex(r=>r.id===cur);go(i<ROUNDS.length-1?ROUNDS[i+1].id:'final')}
+function finishRound(id,ok,n){res[id]={ok,n};nav()}
+function dots(n,list,i){return '<div class="dots">'+Array.from({length:n},(_,k)=>`<i class="${k<list.length?(list[k]?'ok':'bad'):k===i?'cur':''}"></i>`).join('')+'</div>'}
+
+/* ====== лента (SVG, пропорциональная) ====== */
+const Y0=840,Y1=2040;
+function ribbon(points,opt={}){
+  const W=1000,H=opt.h||106,X=y=>(y-Y0)/(Y1-Y0)*W, T=12;
+  let s=`<svg class="ribbon" viewBox="-12 ${-T} ${W+40} ${H}" role="img" aria-label="Лента времени с IX по XXI век">`;
+  for(let c=9;c<=21;c++){const a=Math.max(Y0,(c-1)*100+1),b=Math.min(Y1,c*100+1);const x=X(a),w=X(b)-x;
+    s+=`<rect x="${x}" y="22" width="${w}" height="30" fill="${c%2?'#e9d9b0':'#f6ecd2'}"/><text x="${x+w/2}" y="42" text-anchor="middle" font-size="${c>=20?13:15}" fill="#8a6224" font-family="Lora,Georgia,serif">${ROM(c)}</text>`;}
+  s+=`<rect x="0" y="22" width="${W}" height="30" fill="none" stroke="#8a6224" stroke-width="2"/>`;
+  points.forEach((p,i)=>{const x=X(p.y);const up=i%2===0;
+    s+=`<line x1="${x}" y1="${up?12:52}" x2="${x}" y2="${up?22:64}" stroke="${p.c||'#5c1e24'}" stroke-width="2"/><circle cx="${x}" cy="${up?10:66}" r="${p.big?8:6}" fill="${p.c||'#5c1e24'}" stroke="#fff" stroke-width="1.5"/>`;
+    if(p.n!=null) s+=`<text x="${x}" y="${up?13.5:69.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="Arial">${p.n}</text>`;
+    if(p.label) s+=`<text x="${x}" y="${up?4:86}" text-anchor="middle" font-size="12" font-weight="700" fill="${p.c||'#5c1e24'}" font-family="Lora,Georgia,serif">${esc(p.label)}</text>`;});
+  return '<div class="rwrap">'+s+'</svg></div>';
+}
+function scrollRibbon(y){requestAnimationFrame(()=>{const w=document.querySelector('.rwrap');if(!w||w.scrollWidth<=w.clientWidth)return;const x=(y-Y0)/(Y1-Y0)*w.scrollWidth;w.scrollLeft=Math.max(0,x-w.clientWidth/2);});}
+
+/* ====== НАЧАЛО ====== */
+function intro(){
+  $('#main').innerHTML=`<div class="panel"><h2>Как устроена лента времени</h2>
+  <p class="lead">Историку не нужно помнить сотню дат. Нужны <b>якоря</b> — десяток событий, которые знаешь точно, — и умение быстро понять, <b>что было раньше</b>. Всё остальное цепляется к якорям.</p>
+  ${ribbon(ANCH.map((a,i)=>({y:a.y,n:i+1})))}
+  <p class="lead">Шесть залов, в каждом 3–4 минуты. Можно проходить по одному залу в день.</p>
+  <ol class="lead" style="margin-top:0">
+   <li><b>Якоря</b> — 11 главных событий с датами.</li><li><b>Что раньше?</b> — пары без дат, как на экзамене.</li><li><b>Какой век?</b> — переводим год в век и ловим ловушку 1900 года.</li>
+   <li><b>Рифмы веков</b> — события ровно через сто лет: так даты запоминаются парами.</li><li><b>Ошибка историка</b> — найди в рассказе то, чего тогда ещё не было.</li><li><b>Лента по памяти</b> — собери якоря без дат.</li></ol>
+  <button class="btn big" id="start">Начать с якорей</button>
+  <details><summary>Для взрослого: как и зачем это устроено</summary><ul>
+   <li><b>Порядок, а не даты.</b> На экзамене 610 хронологию спрашивают как «что раньше» (2021, № 6: Москва/Новгород, Исаакий/Спас на Крови, Петергоф/Павловск, бронза/сталь…) и как «найди историческую ошибку и подчеркни её» (2026, № 6). Оба формата здесь есть.</li>
+   <li><b>Якоря.</b> 11 опорных событий с IX по XX век дают каркас; новые факты запоминаются, когда их есть к чему привязать.</li>
+   <li><b>Двойное кодирование.</b> Лента пропорциональна времени: видно, что между Рюриком и Петром — 840 лет, а между Петром и Гагариным — 260.</li>
+   <li><b>Мнемоника «рифмы веков»</b>: 1380→1480, ~1712→1812, 1861→1961. Пару запомнить легче, чем две отдельные даты.</li>
+   <li><b>Извлечение и перемешивание.</b> После знакомства — вспоминание без дат, вопросы из разных эпох вперемешку. Ошибки собираются в «повторить завтра».</li>
+   <li><b>Исправлено против исходника Марка.</b> В его лентах были ошибки в подсказках (Великая Отечественная «1945», «Конец 2000» для 1996 года). Спорные даты помечены: 862 — по летописи, столица — около 1712 года. Пара «микроскоп/телескоп» из экзамена 2021 года сюда не взята: дата изобретения микроскопа спорная.</li></ul></details></div>`;
+  $('#start').onclick=()=>go('anch');
+}
+
+/* ====== 1. ЯКОРЯ: расставь по порядку (даты видны) ====== */
+function anch(){
+  const order=ANCH.slice().sort((a,b)=>a.y-b.y); let k=0, errs=0, placed=[];
+  const deck=shuffle(ANCH);
+  const draw=()=>{
+    $('#main').innerHTML=`<div class="panel"><h2>Якоря: расставь по порядку</h2><p class="lead">Нажимай на события <b>от самого раннего к самому позднему</b>. Каждое ляжет на ленту — прочитай, что случилось.</p>
+    ${ribbon(placed.map(a=>({y:a.y,label:a.d})))}
+    <div class="info" id="info">${placed.length?`<b>${placed[placed.length-1].d} — ${esc(placed[placed.length-1].t)}.</b> ${esc(placed[placed.length-1].s)}`:'Начни с самого древнего события.'}</div>
+    <div class="cards">${deck.map(a=>`<button class="ev ${placed.includes(a)?'done':''}" data-id="${a.id}" ${placed.includes(a)?'disabled':''}><span class="y">${a.d}</span>${esc(a.t)}</button>`).join('')}</div>
+    ${placed.length===ANCH.length?`<div class="row" style="margin-top:12px"><button class="btn big" id="nx">Дальше: «Что раньше?»</button></div>`:''}</div>`;
+    document.querySelectorAll('.ev:not(.done)').forEach(b=>b.onclick=()=>{const a=AM[b.dataset.id];
+      if(a===order[k]){placed.push(a);k++;draw(); if(k===ANCH.length) finishRound('anch',ANCH.length-Math.min(errs,ANCH.length),ANCH.length);}
+      else{errs++;miss(a.id,'Якорь: '+a.t+' ('+a.d+')',exOfAnchor(a.id));b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');$('#info').innerHTML=`<b>Не сейчас.</b> Есть событие раньше, чем «${esc(a.t)}» (${a.d}). Найди самое раннее из оставшихся.`;}});
+    const nx=$('#nx'); if(nx) nx.onclick=nextRound; if(placed.length) scrollRibbon(placed[placed.length-1].y);
+  }; draw();
+}
+
+/* ====== 2. ЧТО РАНЬШЕ? ====== */
+function pair(){
+  const items=shuffle(PAIRS.map((p,i)=>[...p,i])).slice(0,10).map(p=>Math.random()<.5?p:[p[1],p[0],1-p[2],p[3],p[4]]); let i=0, list=[];
+  const draw=()=>{const p=items[i];
+    $('#main').innerHTML=`<div class="panel"><h2>Что раньше?</h2><p class="lead">Дат нет — только порядок. Нажми на то, что появилось или случилось <b>раньше</b>.</p>${dots(items.length,list,i)}
+    <div class="pair"><button class="choice" data-k="0">${esc(p[0])}</button><span class="or">или</span><button class="choice" data-k="1">${esc(p[1])}</button></div><div id="fb"></div></div>`;
+    document.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{const ok=+b.dataset.k===p[2]; list.push(ok); if(!ok) miss('pair:'+p[4],'Что раньше: «'+p[0]+'» или «'+p[1]+'»?','o'+String(p[4]+1).padStart(2,'0'));
+      document.querySelectorAll('.choice').forEach(x=>{x.disabled=true; if(+x.dataset.k===p[2]) x.classList.add('right')}); if(!ok) b.classList.add('wrong');
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно!':'Раньше было: '+esc(p[p[2]])}</b>${esc(p[3])}</div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<items.length?'Дальше':'Итог зала'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<items.length) draw(); else {finishRound('pair',list.filter(Boolean).length,items.length); doneRound('pair','Что раньше?');}}; $('#nx').focus();});
+  }; draw();
+}
+
+/* ====== 3. КАКОЙ ВЕК? ====== */
+function cent(){
+  const items=shuffle(CENT).slice(0,9); if(!items.some(x=>x[0]===1900)) items[8]=[1900,19]; const it=shuffle(items); let i=-1, list=[];
+  const rule=()=>{$('#main').innerHTML=`<div class="panel"><h2>Какой век?</h2>
+    <p class="lead"><b>Правило:</b> зачеркни две последние цифры и прибавь 1. 1<s>812</s> → 18 + 1 = <b>XIX век</b>. 1<s>703</s> → 17 + 1 = <b>XVIII век</b>.</p>
+    <p class="lead"><b>Ловушка:</b> если год кончается на 00 — это <b>последний</b> год века, единицу не прибавляем. 1900 — ещё XIX век, 2000 — ещё XX век. Век, как сотня рублей: сотая монета — последняя в первой сотне.</p>
+    ${ribbon([{y:1801,label:'1801',c:'#2f4f6f'},{y:1900,label:'1900',c:'#2f4f6f'}])}
+    <p class="muted" style="text-align:center;margin-top:0">XIX век — это годы с 1801 по 1900 включительно.</p>
+    <button class="btn big" id="go">Понятно, проверим</button></div>`; $('#go').onclick=()=>{i=0;draw()};};
+  const draw=()=>{const [y,c]=it[i]; const opts=shuffle([...new Set([c,c-1,c+1,c+(Math.random()<.5?2:-2)])].filter(x=>x>0&&x<=21)).slice(0,4); if(!opts.includes(c)) opts[0]=c;
+    const a=ANCH.find(x=>x.y===y);
+    $('#main').innerHTML=`<div class="panel"><h2>Какой век?</h2>${dots(it.length,list,i)}<div class="q"><b style="font-size:1.6em;color:var(--wall)">${y}</b> год${a?`<div class="muted" style="font-size:.7em">${esc(a.t)}</div>`:y===2026?'<div class="muted" style="font-size:.7em">этот год</div>':''}</div>
+    <div class="opts">${shuffle(opts).map(o=>`<button class="choice" data-c="${o}">${ROM(o)}</button>`).join('')}</div><div id="fb"></div></div>`;
+    document.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===c; list.push(ok); if(!ok){const an=ANCH.find(x=>x.y===y); miss('cent:'+y,'Век для '+y+' года',an?exOfAnchor(an.id):null);}
+      document.querySelectorAll('.choice').forEach(x=>{x.disabled=true; if(+x.dataset.c===c) x.classList.add('right')}); if(!ok) b.classList.add('wrong');
+      const trap=y%100===0; const expl=trap?`${y} кончается на 00 — это последний год ${ROM(c)} века.`:`${String(y).slice(0,-2)} + 1 = ${c} → ${ROM(c)} век.`;
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно!':'Правильно: '+ROM(c)+' век'}</b>${esc(expl)}</div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<it.length?'Дальше':'Итог зала'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<it.length) draw(); else {finishRound('cent',list.filter(Boolean).length,it.length); doneRound('cent','Какой век?');}}; $('#nx').focus();});
+  }; rule();
+}
+
+/* ====== 4. РИФМЫ ВЕКОВ ====== */
+function rhyme(){
+  const L=shuffle(RHYMES.map((r,i)=>({i,t:r.a[0],y:r.a[1]}))), R=shuffle(RHYMES.map((r,i)=>({i,t:r.b[0],y:r.b[1]})));
+  let sel=null, done=new Set(), errs=0, last='';
+  const draw=()=>{
+    $('#main').innerHTML=`<div class="panel"><h2>Рифмы веков</h2><p class="lead">У каждого события слева есть «рифма» справа: они случились <b>ровно через сто лет</b> — или, в одной паре, почти одновременно. Соедини пары: нажми слева, потом справа.</p>
+    <div class="match"><div class="col">${L.map(x=>`<button class="mi ${done.has(x.i)?'done':''} ${sel===x.i?'sel':''}" data-l="${x.i}" ${done.has(x.i)?'disabled':''}>${esc(x.t)}${done.has(x.i)?` <span class="y">${x.y}</span>`:''}</button>`).join('')}</div>
+    <div class="col">${R.map(x=>`<button class="mi ${done.has(x.i)?'done':''}" data-r="${x.i}" ${done.has(x.i)?'disabled':''}>${esc(x.t)}${done.has(x.i)?` <span class="y">${x.y}</span>`:''}</button>`).join('')}</div></div>
+    <div class="info" id="info">${last||'Подсказка: вспомни якоря. Что случилось через сто лет после Куликовской битвы?'}</div>
+    ${done.size===RHYMES.length?`<div class="row" style="margin-top:12px"><button class="btn big" id="nx">Итог зала</button></div>`:''}</div>`;
+    document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{sel=+b.dataset.l;draw()});
+    document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ if(sel===null){$('#info').textContent='Сначала выбери событие слева.';return}
+      const r=+b.dataset.r; if(r===sel){done.add(r);last=`<b>Пара!</b> ${esc(RHYMES[r].tip)}`;sel=null;draw();}
+      else{errs++;miss('rhyme:'+sel,'Рифма веков: '+RHYMES[sel].a[0]+' → '+RHYMES[sel].b[0]);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');$('#info').innerHTML='<b>Не рифма.</b> Прикинь век: между событиями пары — сто лет или совсем немного.';}});
+    const nx=$('#nx'); if(nx) nx.onclick=()=>{finishRound('rhyme',Math.max(0,RHYMES.length-errs),RHYMES.length); doneRound('rhyme','Рифмы веков');};
+  }; draw();
+}
+
+/* ====== 5. ОШИБКА ИСТОРИКА ====== */
+function err(){
+  const it=shuffle(STORIES).slice(0,6); if(!it.some(s=>s.e===-1)) it[5]=STORIES.find(s=>s.e===-1); let i=0, list=[];
+  const draw=()=>{const s=it[i];
+    $('#main').innerHTML=`<div class="panel"><h2>Ошибка историка</h2><p class="lead">Профессор написал рассказ, но в нём может быть <b>анахронизм</b> — то, чего тогда ещё не было. Нажми на ошибочное место. Если всё верно — «Ошибки нет».</p>${dots(it.length,list,i)}
+    <div class="story">${s.f.map((t,k)=>`<button class="frag" data-k="${k}">${esc(t)}</button>`).join(' ')}</div>
+    <div class="row" style="justify-content:center"><button class="btn ghost" data-k="-1" id="none">Ошибки нет</button></div><div id="fb"></div></div>`;
+    const pick=k=>{const ok=k===s.e; list.push(ok); if(!ok) miss('err:'+s.f[0]+s.f[1],'Ошибка историка: «'+s.f.join(' ')+'»');
+      document.querySelectorAll('.frag,#none').forEach(x=>x.disabled=true);
+      if(s.e>=0) document.querySelector(`.frag[data-k="${s.e}"]`).classList.add('right');
+      if(k>=0&&k!==s.e) document.querySelector(`.frag[data-k="${k}"]`).classList.add('wrongpick');
+      if(ok&&k>=0) document.querySelector(`.frag[data-k="${k}"]`).classList.add('right');
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно!':s.e<0?'Здесь ошибки нет.':'Ошибка в другом месте.'}</b>${esc(s.why)}</div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<it.length?'Дальше':'Итог зала'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<it.length) draw(); else {finishRound('err',list.filter(Boolean).length,it.length); doneRound('err','Ошибка историка');}}; $('#nx').focus();};
+    document.querySelectorAll('.frag').forEach(b=>b.onclick=()=>pick(+b.dataset.k)); $('#none').onclick=()=>pick(-1);
+  }; draw();
+}
+
+/* ====== 6. ЛЕНТА ПО ПАМЯТИ (без дат) ====== */
+function mem(){
+  const pool=ANCH.filter(a=>missed.has(a.id)); const rest=shuffle(ANCH.filter(a=>!missed.has(a.id)));
+  const set=pool.concat(rest).slice(0,8).sort((a,b)=>a.y-b.y); const deck=shuffle(set); let k=0, errs=0, placed=[];
+  const draw=()=>{
+    $('#main').innerHTML=`<div class="panel"><h2>Лента по памяти</h2><p class="lead">Те же якоря, но <b>без дат</b>. Нажимай от самого раннего к самому позднему — дата появится, когда угадаешь место.${pool.length?' Сюда попали якоря, на которых ты ошибался.':''}</p>
+    ${ribbon(placed.map(a=>({y:a.y,label:a.d})))}
+    <div class="info" id="info">${placed.length?`<b>${placed[placed.length-1].d}</b> — ${esc(placed[placed.length-1].t)}.`:'Какое событие самое древнее?'}</div>
+    <div class="cards">${deck.map(a=>`<button class="ev ${placed.includes(a)?'done':''}" data-id="${a.id}" ${placed.includes(a)?'disabled':''}>${placed.includes(a)?`<span class="y">${a.d}</span>`:''}${esc(a.t)}</button>`).join('')}</div>
+    ${placed.length===set.length?`<div class="row" style="margin-top:12px"><button class="btn big" id="nx">Итог</button></div>`:''}</div>`;
+    document.querySelectorAll('.ev:not(.done)').forEach(b=>b.onclick=()=>{const a=AM[b.dataset.id];
+      if(a===set[k]){placed.push(a);k++;draw(); if(k===set.length) finishRound('mem',Math.max(0,set.length-errs),set.length);}
+      else{errs++;miss(a.id,'Якорь: '+a.t+' ('+a.d+')',exOfAnchor(a.id));b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');$('#info').innerHTML=`<b>Не сейчас.</b> «${esc(a.t)}» было позже. Что случилось раньше?`;}});
+    const nx=$('#nx'); if(nx) nx.onclick=()=>go('final'); if(placed.length) scrollRibbon(placed[placed.length-1].y);
+  }; draw();
+}
+
+function doneRound(id,name){const r=res[id];
+  $('#main').innerHTML=`<div class="panel" style="text-align:center"><h2>${esc(name)}: ${r.ok} из ${r.n}</h2><p class="lead">${r.ok===r.n?'Без единой ошибки!':r.ok>=r.n*0.7?'Хорошо! Ошибки попадут в «повторить завтра».':'Этот зал стоит пройти ещё раз завтра — память укрепляется, когда вспоминаешь через паузу.'}</p>
+  <div class="row" style="justify-content:center"><button class="btn big" id="nx">Следующий зал</button><button class="btn ghost" id="again">Пройти ещё раз</button></div></div>`;
+  $('#nx').onclick=nextRound; $('#again').onclick=()=>go(id);}
+
+/* ====== ИТОГ: личная лента ====== */
+function reportToMuseum(){
+  const done=Object.values(res); if(done.length<3) return; const ok=done.reduce((a,r)=>a+r.ok,0), n=done.reduce((a,r)=>a+r.n,0);
+  const rate=ok/n>=.9?'easy':ok/n>=.6?'ok':'hard';
+  try{localStorage.setItem('museum-result',JSON.stringify({q:'lenta',rate,missed:[...missedEx],at:Date.now()}))}catch(e){}
+}
+function final(){
+  reportToMuseum();
+  const by=+store('lenta-birth')||'';
+  const pts=ANCH.map((a,i)=>({y:a.y,n:i+1}));
+  if(by) pts.push({y:by,label:'Ты',c:'#2f4f6f',big:true});
+  pts.push({y:2026,label:'сейчас',c:'#2f7a45'});
+  const rows=ROUNDS.map(r=>`<tr><td>${r.name}</td><td>${res[r.id]?res[r.id].ok+' из '+res[r.id].n:'—'}</td></tr>`).join('');
+  const rep=[...missed.values()];
+  $('#main').innerHTML=`<div class="panel"><h2>Твоя лента времени</h2>
+   <div class="row"><label for="by" class="lead" style="margin:0">В каком году ты родился?</label><input id="by" class="year" inputmode="numeric" maxlength="4" value="${by}"><button class="btn" id="setby">Поставить на ленту</button></div>
+   ${ribbon(pts)}
+   <div class="legend">${ANCH.map((a,i)=>`<span><b>${i+1}. ${a.d}</b>${esc(a.t)}</span>`).join('')}</div>
+   ${by?`<p class="lead">Бородино было за <b>${by-1812}</b> лет до твоего рождения, Куликовская битва — за <b>${by-1380}</b>, а Петербургу в год твоего рождения исполнилось <b>${by-1703}</b>.</p>`:''}
+   <table class="summary"><tr><th>Зал</th><th>Результат</th></tr>${rows}</table>
+   ${rep.length?`<h3 style="color:var(--wall)">Повторить завтра</h3><ul class="lead">${rep.map(r=>'<li>'+esc(r)+'</li>').join('')}</ul><p class="muted">Лучше всего — завтра «Лента по памяти» и «Что раньше?», а через неделю снова весь квиз. Вспоминать через паузу полезнее, чем повторять подряд.</p>`:'<p class="lead">Ошибок нет — следующий раз через неделю: проверим, держатся ли якоря.</p>'}
+   <div class="row"><button class="btn big" id="again">Пройти заново</button></div></div>`;
+  $('#setby').onclick=()=>{const v=+$('#by').value; if(v>=1990&&v<=2026){store('lenta-birth',String(v));final();} else $('#by').classList.add('shake');};
+  $('#again').onclick=()=>{res={};missed=new Map();missedEx.clear();go('anch')};
+}
+nav(); intro();
+</script>
+</body>
+</html>
