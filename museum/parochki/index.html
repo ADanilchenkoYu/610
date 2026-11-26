@@ -17,7 +17,7 @@ body{
   font-family:"Lora",Georgia,"Times New Roman",serif;color:var(--paper);
   background:
     repeating-linear-gradient(90deg,var(--wall) 0 44px,#621f26 44px 88px);
-  display:flex;flex-direction:column;overflow:hidden;
+  display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;
 }
 header{
   flex:0 0 auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
@@ -38,11 +38,11 @@ h1 small{display:block;font-size:.5em;letter-spacing:.12em;color:var(--gold);fon
 .modes{display:flex;gap:8px}
 .modes .btn[aria-pressed="true"]{background:var(--paper);color:var(--wall)}
 
-#stage{flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:14px;min-height:0}
+#stage{flex:1 0 auto;display:flex;padding:14px}
+#board{margin:auto}
 #board{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--gap,14px);width:var(--bw)}
 .card{
   width:var(--cw);height:var(--ch);perspective:1200px;border:0;padding:0;background:none;cursor:pointer;font:inherit;color:inherit;
-  container-type:inline-size;
 }
 .inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
 .card.up .inner,.card.done .inner{transform:rotateY(180deg)}
@@ -61,16 +61,18 @@ h1 small{display:block;font-size:.5em;letter-spacing:.12em;color:var(--gold);fon
   border:6px solid var(--gold);box-shadow:inset 0 0 0 3px var(--gold-lo),0 6px 14px rgba(0,0,0,.45);
 }
 .front.pic{padding:6%;background:#efe6cf}
+.front.pic .noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;background:#fff;color:#6b5440;font-size:12px;padding:6px;box-shadow:0 0 0 2px #3a2614}
 .front.pic img{width:100%;height:100%;object-fit:contain;display:block;background:#fff;box-shadow:0 0 0 2px #3a2614}
 .front.txt{
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8% 7%;
   color:var(--ink);background:
     linear-gradient(rgba(255,255,255,.35),rgba(255,255,255,0)),var(--paper);
 }
-.front.txt .hero{font-weight:700;font-size:clamp(15px,14.5cqw,46px);line-height:1.1;margin-bottom:.4em}
+.front.txt{overflow:hidden;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.front.txt .hero{font-weight:700;font-size:1em;line-height:1.1;margin-bottom:.35em;hyphens:none;-webkit-hyphens:none;overflow-wrap:normal}
 .front.txt .rule{width:40%;height:2px;background:var(--gold);margin:.1em auto .6em}
-.front.txt .auth{font-size:clamp(12px,9.6cqw,28px);color:var(--muted)}
-.front.txt .book{font-style:italic;font-size:clamp(12px,10.2cqw,30px);margin-top:.25em;line-height:1.15}
+.front.txt .auth{font-size:.68em;color:var(--muted);line-height:1.15}
+.front.txt .book{font-style:italic;font-size:.72em;margin-top:.2em;line-height:1.15}
 .card.done .front{box-shadow:inset 0 0 0 3px var(--gold-lo),0 0 0 4px var(--gold-hi),0 0 24px 6px rgba(243,217,143,.55)}
 .card.done{cursor:default}
 .card.shake .inner{animation:shake .45s}
@@ -119,8 +121,8 @@ h1 small{display:block;font-size:.5em;letter-spacing:.12em;color:var(--gold);fon
 </style>
 </head>
 <body>
-<a href="../" style="position:fixed;bottom:12px;left:12px;z-index:50;background:#f3d98f;color:#3a1a06;border:1px solid #8a6224;border-radius:10px;padding:7px 12px;font:700 15px Georgia,serif;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.3)">← В музей</a>
 <header>
+  <a href="../" class="btn ghost" style="text-decoration:none;padding:6px 12px">← Музей</a>
   <h1>Литературная галерея<small>Парочки: найди картине её подпись</small></h1>
   <div class="modes" role="group" aria-label="Размер игры">
     <button class="btn ghost" data-n="6" aria-pressed="false">Разминка · 6 пар</button>
@@ -202,7 +204,7 @@ const IMG=v=>v&&v.startsWith('pack:')?(PACK[v.slice(5)]||''):v;
 async function ensurePack(){ if(Object.keys(PACK).length) return; let fam=null; try{fam=localStorage.getItem('museum-family')}catch(e){} if(!fam) return;
   try{const r=await fetch('https://akunilczueybkyoaiksa.supabase.co/rest/v1/rpc/museum_get',{method:'POST',headers:{apikey:'sb_publishable_FTw98SWhHvXRiRuIHdfJPg_zZ8DOPsU','Content-Type':'application/json'},body:JSON.stringify({p_id:fam+'-img'})}); const j=await r.json(); if(j&&j.imgs){PACK=j.imgs; try{localStorage.setItem('museum-img',JSON.stringify(PACK))}catch(e){} build();}}catch(e){} }
 const board=$('#board'), label=$('#label');
-let N=10, deck=[], open=[], lock=false, moves=0, found=0, labelTimer=null, used=[], missed=new Set();
+let N=(innerWidth<520?6:10), deck=[], open=[], lock=false, moves=0, found=0, labelTimer=null, used=[], missed=new Set();
 
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -226,7 +228,7 @@ function build(){
     b.className='card';b.dataset.i=i;
     b.setAttribute('aria-label','Закрытая карточка '+(i+1));
     const front=c.kind==='pic'
-      ? `<div class="face front pic"><img src="${IMG(c.p.img)}" alt="${c.p.hero}"></div>`
+      ? `<div class="face front pic">${IMG(c.p.img)?`<img src="${IMG(c.p.img)}" alt="${c.p.hero}">`:`<div class="noimg">Картинка не загрузилась. Откройте музей по семейной ссылке</div>`}</div>`
       : `<div class="face front txt"><div class="hero">${c.p.hero}</div><div class="rule"></div><div class="auth">${c.p.auth}</div><div class="book">${c.p.book}</div></div>`;
     b.innerHTML=`<div class="inner"><div class="face back">${EMBLEM}</div>${front}</div>`;
     b.addEventListener('click',()=>flip(b));
@@ -240,7 +242,7 @@ function build(){
 const R=0.84;
 function layout(){
   const n=deck.length, st=$('#stage');
-  const W=st.clientWidth-28, H=st.clientHeight-28, gap=Math.max(8,Math.min(16,W/80));
+  const W=st.clientWidth-28, H=innerHeight-document.querySelector('header').offsetHeight-28, gap=Math.max(8,Math.min(16,W/80));
   let best={s:0};
   for(let cols=2;cols<=n;cols++){
     const rows=Math.ceil(n/cols);
@@ -248,11 +250,18 @@ function layout(){
     const w=Math.min(cw,ch*R); // пропорция карточки
     if(w>best.s) best={s:w,cols};
   }
+  // на телефоне не мельчим: карточка не уже 100px, лишнее — прокруткой
+  if(best.s<100){ const cols=Math.max(2,Math.floor((W+gap)/(100+gap))); best={s:Math.min(130,(W-gap*(cols-1))/cols),cols}; }
   board.style.setProperty('--gap',gap+'px');
   const cw=Math.floor(best.s);
   board.style.setProperty('--cw',cw+'px');
   board.style.setProperty('--ch',Math.floor(cw/R)+'px');
   board.style.setProperty('--bw',(cw*best.cols+gap*(best.cols-1)+1)+'px');
+  requestAnimationFrame(()=>fitText(cw));
+}
+function fitText(cw){
+  document.querySelectorAll('.front.txt').forEach(el=>{ let f=Math.max(9,Math.min(40,cw*0.15)); el.style.fontSize=f+'px';
+    let guard=0; while((el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1)&&f>8&&guard++<30){ f*=0.92; el.style.fontSize=f+'px'; } });
 }
 addEventListener('resize',layout);
 
@@ -321,6 +330,7 @@ $('#restart').addEventListener('click',build);
 $('#again').addEventListener('click',()=>{$('#final').classList.remove('show');build()});
 $('#go').addEventListener('click',()=>{$('#intro').classList.remove('show');layout()});
 // предзагрузка картинок
+document.querySelectorAll('.modes .btn').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.n===N));
 build(); ensurePack();
 </script>
 </body>

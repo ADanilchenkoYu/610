@@ -2,7 +2,6 @@
   "name": "Музей Саши",
   "short_name": "Музей Саши",
   "description": "Подготовка к 610: экскурсии, залы, квизы",
-  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#5c1e24",

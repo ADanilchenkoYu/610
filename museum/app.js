@@ -39,7 +39,15 @@ const SB_KEY = 'sb_publishable_FTw98SWhHvXRiRuIHdfJPg_zZ8DOPsU';
 const LS = 'museum-sasha-v1';
 /* семейный код: приходит в ссылке #k=… и запоминается на устройстве */
 let FAMILY = null;
-(function () { try { const m = location.hash.match(/k=([A-Za-z0-9_-]{16,})/); if (m) { localStorage.setItem('museum-family', m[1]); history.replaceState(null, '', location.pathname); } FAMILY = localStorage.getItem('museum-family'); } catch (e) {} })();
+(function () { try { const m = location.hash.match(/k=([A-Za-z0-9_-]{16,})/); if (m) localStorage.setItem('museum-family', m[1]); FAMILY = (m && m[1]) || localStorage.getItem('museum-family');
+  // код остаётся в адресе: так иконка «На экран Домой» сохраняется уже с ним (на iPhone у неё своя память, отдельная от Safari)
+  if (FAMILY && !m) history.replaceState(null, '', location.pathname + '#k=' + FAMILY); } catch (e) {} })();
+function connectFamily(text) {
+  const m = String(text || '').match(/([A-Za-z0-9_-]{20,})/); if (!m) { toast('Не похоже на семейную ссылку'); return; }
+  FAMILY = m[1]; try { localStorage.setItem('museum-family', FAMILY); localStorage.removeItem('museum-img'); } catch (e) {}
+  history.replaceState(null, '', location.pathname + '#k=' + FAMILY); setSync('подключаю…');
+  loadPack().then(() => sync()).then(() => { toast('Семья подключена!'); render(); });
+}
 let dirty = false;
 function lsLoad() { try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j && j.S) { S = Object.assign(EMPTY(), j.S); LOG = j.LOG || LOG; dirty = !!j.dirty; } } catch (e) {} }
 function lsSave() { try { localStorage.setItem(LS, JSON.stringify({ S, LOG, dirty })); } catch (e) {} }
@@ -272,7 +280,9 @@ function homeHTML() {
   else if (due.list.length) main = `<h2>Экскурсия дня</h2><p class="count">${due.list.length} экспонатов${due.all > due.list.length ? ' (ещё ' + (due.all - due.list.length) + ' подождут до завтра)' : ''} · около ${Math.max(3, Math.round(due.list.length * 0.6))} мин</p><button class="btn big" data-act="start">Начать экскурсию</button>`;
   else main = `<h2>${todayLog && todayLog.n ? 'Экскурсия дня пройдена!' : 'Сегодня повторять нечего'}</h2><p class="count">${known ? 'Все знакомые экспонаты в порядке. Можно открыть новую экспозицию ниже.' : 'Музей пока пустой: экспонаты появляются, когда проходишь квизы. Начни с первой экспозиции ниже.'}</p>`;
   const first = nq[0];
-  return `<div class="panel"><div class="hero-row"><div class="grow">${main}</div>
+  const fam = FAMILY ? '' : `<div class="panel" style="border-color:var(--warn)"><h2>Подключите семью</h2><p>Чтобы прогресс был общим на всех устройствах и появились картинки, вставьте сюда семейную ссылку (её прислал папа) и нажмите «Подключить».</p>
+    <form id="famf" class="typed" style="justify-content:flex-start"><input id="fami" placeholder="https://…/museum/#k=…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Семейная ссылка"><button class="btn">Подключить</button></form></div>`;
+  return fam + `<div class="panel"><div class="hero-row"><div class="grow">${main}</div>
       <div class="kpis" style="flex:0 1 330px"><div class="kpi"><b>${known}</b>экспонатов в музее</div><div class="kpi"><b>${gold}</b>в Золотом зале</div></div></div></div>
     ${first ? `<div class="panel"><h2>${first.why === 'Новая экспозиция' ? 'Новая экспозиция' : 'Зал на сегодня'}</h2>${qcardHTML(first)}
       ${nq.length > 1 ? `<details><summary class="muted" style="cursor:pointer">Следующие в очереди (всего ещё ${nq.length - 1})</summary>${nq.slice(1, 6).map(x => qcardHTML(x)).join('')}</details>` : ''}</div>` : ''}
@@ -319,6 +329,7 @@ function curHTML() {
 function label(e) { return e.t === 'phrase' ? e.phrase : e.t === 'poem' ? e.title + ' (' + e.auth + ')' : e.t === 'work' ? e.work + ' — ' + e.auth : e.t === 'writer' ? e.name : e.name + ' — ' + e.work; }
 
 function bind() {
+  const ff = document.getElementById('famf'); if (ff) ff.onsubmit = ev => { ev.preventDefault(); connectFamily(document.getElementById('fami').value); };
   document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openQuiz(b.dataset.open));
   document.querySelectorAll('[data-act="start"]').forEach(b => b.onclick = startSession);
   document.querySelectorAll('[data-hall]').forEach(b => b.onclick = () => { go('halls'); const el = document.getElementById('hall-' + b.dataset.hall); if (el) el.scrollIntoView({ behavior: 'smooth' }); });
