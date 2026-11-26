@@ -1,5 +1,5 @@
 /* Музей Саши: работа без интернета. Свои файлы — сначала из сети (чтобы обновления приходили сразу), без связи — из кэша. */
-const CACHE = 'museum-v2';
+const CACHE = 'museum-v3';
 const CORE = ['./', 'index.html', 'app.js', 'catalog.js', 'manifest.webmanifest', 'fonts/Lora-Variable.ttf', 'fonts/Lora-Italic-Variable.ttf',
   'img/oleg.jpg', 'img/cosette.jpg', 'icons/icon-192.png', 'parochki/', 'klassiki/'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
