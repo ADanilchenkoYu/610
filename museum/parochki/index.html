@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Литературная галерея — Парочки</title>
+<style>
+@font-face{font-family:"Lora";src:url("../fonts/Lora-Variable.ttf") format("truetype");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Lora";src:url("../fonts/Lora-Italic-Variable.ttf") format("truetype");font-weight:400 700;font-style:italic;font-display:swap}
+:root{
+  --wall:#5c1e24; --wall2:#4e181d; --gold:#d9b35e; --gold-hi:#f3d98f; --gold-lo:#8a6224;
+  --paper:#f6eedb; --ink:#2b1a10; --muted:#6b5440; --ok:#3f7d4a; --warn:#b5641c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:"Lora",Georgia,"Times New Roman",serif;color:var(--paper);
+  background:
+    repeating-linear-gradient(90deg,var(--wall) 0 44px,#621f26 44px 88px);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+header{
+  flex:0 0 auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:7px 22px;background:linear-gradient(#3a1216,#2c0d10);
+  border-bottom:5px solid var(--gold);box-shadow:0 3px 0 var(--gold-lo),0 8px 18px rgba(0,0,0,.4);
+}
+h1{margin:0;font-size:clamp(20px,2.4vw,32px);letter-spacing:.06em;color:var(--gold-hi);font-weight:700;text-transform:uppercase}
+h1 small{display:block;font-size:.5em;letter-spacing:.12em;color:var(--gold);font-weight:400;text-transform:none;font-style:italic}
+.stats{display:flex;gap:18px;margin-left:auto;font-size:clamp(15px,1.5vw,20px)}
+.stat b{color:var(--gold-hi);font-size:1.25em}
+.btn{
+  font:inherit;font-size:clamp(14px,1.3vw,17px);cursor:pointer;border-radius:8px;padding:8px 14px;
+  background:linear-gradient(var(--gold-hi),var(--gold));color:#3a1a06;border:1px solid var(--gold-lo);font-weight:600;
+  box-shadow:0 2px 0 var(--gold-lo);
+}
+.btn.ghost{background:transparent;color:var(--gold-hi);border-color:var(--gold)}
+.btn:focus-visible,.card:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.modes{display:flex;gap:8px}
+.modes .btn[aria-pressed="true"]{background:var(--paper);color:var(--wall)}
+
+#stage{flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:14px;min-height:0}
+#board{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--gap,14px);width:var(--bw)}
+.card{
+  width:var(--cw);height:var(--ch);perspective:1200px;border:0;padding:0;background:none;cursor:pointer;font:inherit;color:inherit;
+  container-type:inline-size;
+}
+.inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.card.up .inner,.card.done .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.back{
+  background:
+    radial-gradient(circle at 50% 50%,rgba(243,217,143,.18) 0 22%,transparent 23%),
+    repeating-linear-gradient(45deg,#6e2329 0 10px,#651f25 10px 20px);
+  border:6px solid var(--gold);box-shadow:inset 0 0 0 3px var(--gold-lo),inset 0 0 0 7px #6e2329,inset 0 0 0 9px var(--gold),0 6px 14px rgba(0,0,0,.45);
+  display:flex;align-items:center;justify-content:center;
+}
+.back svg{width:42%;height:auto;opacity:.95}
+.card:not(.up):not(.done):hover .back{filter:brightness(1.12)}
+.front{
+  transform:rotateY(180deg);background:var(--paper);
+  border:6px solid var(--gold);box-shadow:inset 0 0 0 3px var(--gold-lo),0 6px 14px rgba(0,0,0,.45);
+}
+.front.pic{padding:6%;background:#efe6cf}
+.front.pic img{width:100%;height:100%;object-fit:contain;display:block;background:#fff;box-shadow:0 0 0 2px #3a2614}
+.front.txt{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8% 7%;
+  color:var(--ink);background:
+    linear-gradient(rgba(255,255,255,.35),rgba(255,255,255,0)),var(--paper);
+}
+.front.txt .hero{font-weight:700;font-size:clamp(15px,14.5cqw,46px);line-height:1.1;margin-bottom:.4em}
+.front.txt .rule{width:40%;height:2px;background:var(--gold);margin:.1em auto .6em}
+.front.txt .auth{font-size:clamp(12px,9.6cqw,28px);color:var(--muted)}
+.front.txt .book{font-style:italic;font-size:clamp(12px,10.2cqw,30px);margin-top:.25em;line-height:1.15}
+.card.done .front{box-shadow:inset 0 0 0 3px var(--gold-lo),0 0 0 4px var(--gold-hi),0 0 24px 6px rgba(243,217,143,.55)}
+.card.done{cursor:default}
+.card.shake .inner{animation:shake .45s}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0)}25%{transform:rotateY(180deg) translateX(-7px)}75%{transform:rotateY(180deg) translateX(7px)}}
+
+/* label (этикетка) */
+#label{
+  position:fixed;left:50%;bottom:18px;transform:translate(-50%,140%);transition:transform .35s ease;
+  width:min(760px,94vw);display:flex;gap:16px;align-items:center;
+  background:var(--paper);color:var(--ink);border:4px solid var(--gold);border-radius:12px;
+  box-shadow:0 0 0 2px var(--gold-lo),0 14px 40px rgba(0,0,0,.55);padding:14px 18px;z-index:5;
+}
+#label.show{transform:translate(-50%,0)}
+#label img{width:96px;height:96px;object-fit:cover;border:3px solid var(--gold);flex:0 0 auto;background:#fff}
+#label .t{font-weight:700;font-size:clamp(17px,1.8vw,22px)}
+#label .s{font-style:italic;color:var(--muted);margin:2px 0 6px}
+#label p{margin:0;font-size:clamp(15px,1.5vw,18px);line-height:1.4}
+#label.warn{border-color:var(--warn)}
+#label.warn .t{color:var(--warn)}
+#label .x{margin-left:auto;align-self:flex-start;background:none;border:0;font-size:26px;color:var(--muted);cursor:pointer;line-height:1}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(30,8,10,.82);display:none;align-items:center;justify-content:center;z-index:10;padding:20px}
+.overlay.show{display:flex}
+.panel{
+  background:var(--paper);color:var(--ink);border:6px solid var(--gold);border-radius:14px;
+  box-shadow:0 0 0 3px var(--gold-lo),0 20px 60px rgba(0,0,0,.6);max-width:980px;width:100%;max-height:92vh;overflow:auto;padding:26px 30px;text-align:center;
+}
+.panel h2{margin:0 0 6px;font-size:clamp(26px,3vw,38px);color:var(--wall)}
+.panel p.lead{font-size:clamp(16px,1.6vw,20px);margin:6px auto 14px;max-width:720px;line-height:1.45}
+.panel .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.panel .btn.big{font-size:clamp(17px,1.7vw,21px);padding:12px 22px}
+.traps{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
+.trap{background:#fff7e6;border:2px dashed var(--warn);border-radius:10px;padding:8px 12px;font-size:15px}
+.recap{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:16px;text-align:left}
+.recap figure{margin:0;background:#fff;border:3px solid var(--gold);border-radius:8px;overflow:hidden}
+.recap img{width:100%;height:120px;object-fit:cover;display:block}
+.recap figcaption{padding:6px 8px;font-size:14px;line-height:1.3}
+.recap figcaption b{display:block;font-size:15px}
+.recap figcaption i{color:var(--muted)}
+.recap.quiz figcaption{filter:blur(7px);user-select:none}
+.recap.quiz figure{cursor:pointer}
+.recap.quiz figure.shown figcaption{filter:none}
+.credits{font-size:12px;color:var(--muted);margin-top:14px}
+@media (max-width:640px){header{padding:8px 12px;gap:10px}.stats{gap:10px}#label img{width:64px;height:64px}}
+</style>
+</head>
+<body>
+<a href="../" style="position:fixed;bottom:12px;left:12px;z-index:50;background:#f3d98f;color:#3a1a06;border:1px solid #8a6224;border-radius:10px;padding:7px 12px;font:700 15px Georgia,serif;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.3)">← В музей</a>
+<header>
+  <h1>Литературная галерея<small>Парочки: найди картине её подпись</small></h1>
+  <div class="modes" role="group" aria-label="Размер игры">
+    <button class="btn ghost" data-n="6" aria-pressed="false">Разминка · 6 пар</button>
+    <button class="btn ghost" data-n="10" aria-pressed="true">Вся галерея · 10 пар</button>
+  </div>
+  <div class="stats">
+    <span class="stat">Ходы: <b id="moves">0</b></span>
+    <span class="stat">Найдено: <b id="found">0</b>/<b id="total">10</b></span>
+  </div>
+  <button class="btn" id="restart">Заново</button>
+</header>
+<div id="stage"><div id="board" aria-live="polite"></div></div>
+
+<div id="label" role="status" aria-live="polite">
+  <img alt="">
+  <div><div class="t"></div><div class="s"></div><p></p></div>
+  <button class="x" aria-label="Закрыть">×</button>
+</div>
+
+<div class="overlay show" id="intro">
+  <div class="panel">
+    <h2>Добро пожаловать в галерею!</h2>
+    <p class="lead">Под карточками спрятаны картины и музейные подписи к ним: <b>герой — автор, книга</b>. Открывай по две карточки. Нашёл пару — прочитай этикетку: там главная примета героя.</p>
+    <div class="traps">
+      <div class="trap">⚠ У <b>Толстого</b> здесь два героя из одной книги</div>
+      <div class="trap">⚠ У <b>Толкина</b> — тоже два</div>
+      <div class="trap">⚠ И у <b>Роальда Даля</b> — две книги</div>
+    </div>
+    <div class="row"><button class="btn big" id="go">Открыть галерею</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="final">
+  <div class="panel">
+    <h2>Браво, хранитель галереи!</h2>
+    <p class="lead" id="finalText"></p>
+    <div class="recap" id="recap"></div>
+    <div class="row">
+      <button class="btn big ghost" id="selfcheck" style="color:var(--wall);border-color:var(--wall)">Проверь себя: спрятать подписи</button>
+      <button class="btn big" id="again">Сыграть ещё раз</button>
+    </div>
+    <p class="credits">Иллюстрации: В. Васнецов (Олег), Э. Байяр (Козетта), У. Тюнелль (Гэндальф), К. Блейк (Матильда, Ведьмы); остальные — из Сашиных книг.</p>
+  </div>
+</div>
+
+<script>
+const PAIRS=[
+ {id:'oleg',img:'../img/oleg.jpg',hero:'Вещий Олег',auth:'А. С. Пушкин',book:'«Песнь о вещем Олеге»',
+  fact:'Кудесник предсказал князю: «Ты примешь смерть от коня своего». Олег расстался с конём, а через много лет его ужалила змея, выползшая из конского черепа.'},
+ {id:'nast',img:'pack:nast',hero:'Настенька',auth:'С. Т. Аксаков',book:'«Аленький цветочек»',
+  fact:'Младшая дочь купца попросила у отца не наряды, а аленький цветочек. Её любовь расколдовала чудище — оно оказалось прекрасным принцем.'},
+ {id:'kost',img:'pack:kost',hero:'Костылин',auth:'Л. Н. Толстой',book:'«Кавказский пленник»',group:'tolstoy',
+  fact:'Толстый, тяжёлый, всё время ноет. При побеге стёр ноги и отстал — из-за него беглецов поймали.'},
+ {id:'zhil',img:'pack:zhil',hero:'Жилин и Дина',auth:'Л. Н. Толстой',book:'«Кавказский пленник»',group:'tolstoy',
+  fact:'Жилин лепил для девочки Дины глиняных кукол, а она тайком носила ему лепёшки и молоко. Потом Дина подала в яму длинный шест — и Жилин выбрался.'},
+ {id:'kvakli',img:'pack:kvakli',hero:'Мистер Квакли, эсквайр',auth:'Вадим Левин',book:'«Глупая лошадь»',
+  fact:'Жил за сараем и спал в кадушке. Его сосед мистер Крякли прогулялся за сарай — и Квакли пропал. Подсказка в именах: кто квакает, а кто крякает?'},
+ {id:'cosette',img:'../img/cosette.jpg',hero:'Козетта',auth:'Виктор Гюго',book:'«Отверженные»',
+  fact:'Маленькая служанка жадных трактирщиков Тенардье: подметала, мыла, ночью одна ходила в лес за водой. Её спас добрый Жан Вальжан.'},
+ {id:'gand',img:'pack:gand',hero:'Гэндальф',auth:'Дж. Р. Р. Толкин',book:'«Хоббит»',group:'tolkien',
+  fact:'Серый волшебник с посохом и в остроконечной шляпе. Это он позвал хоббита Бильбо в путешествие вместе с тринадцатью гномами.'},
+ {id:'goll',img:'pack:goll',hero:'Голлум',auth:'Дж. Р. Р. Толкин',book:'«Хоббит»',group:'tolkien',
+  fact:'Живёт на острове посреди подземного озера, играет с Бильбо в загадки и называет кольцо «моя прелесть».'},
+ {id:'mat',img:'pack:mat',hero:'Матильда',auth:'Роальд Даль',book:'«Матильда»',group:'dahl',
+  fact:'В четыре года уже прочла все детские книги в библиотеке. А потом научилась двигать предметы взглядом — и опрокинула стакан с тритоном на директрису Транчбуль.'},
+ {id:'witch',img:'pack:witch',hero:'Великая Ведьма',auth:'Роальд Даль',book:'«Ведьмы»',group:'dahl',
+  fact:'Главная ведьма мира: под маской у неё страшное лицо. Она задумала превратить всех детей Англии в мышей.'}
+];
+const TRAP={
+ tolstoy:'Книга та же — «Кавказский пленник»! Но герой другой. Кто толстый и отстаёт, а кто лезет наверх по шесту?',
+ tolkien:'Оба из «Хоббита»! Но один — волшебник с посохом, а другой живёт в пещере у подземного озера.',
+ dahl:'Автор тот же — Роальд Даль, а книги разные. Кто любит читать, а кто ненавидит детей?'
+};
+const EMBLEM='<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#f3d98f" stroke-width="3"><rect x="14" y="14" width="72" height="72" rx="4"/><rect x="22" y="22" width="56" height="56" rx="2" stroke-width="1.5"/></g><path d="M30 68 V38 h40 v30" fill="none" stroke="#f3d98f" stroke-width="2.5"/><path d="M26 38 L50 26 L74 38 Z" fill="#d9b35e"/><g stroke="#f3d98f" stroke-width="3"><line x1="38" y1="42" x2="38" y2="66"/><line x1="50" y1="42" x2="50" y2="66"/><line x1="62" y1="42" x2="62" y2="66"/></g><rect x="26" y="66" width="48" height="5" fill="#d9b35e"/></svg>';
+
+const $=s=>document.querySelector(s);
+let PACK={}; try{PACK=JSON.parse(localStorage.getItem('museum-img')||'{}')}catch(e){}
+const IMG=v=>v&&v.startsWith('pack:')?(PACK[v.slice(5)]||''):v;
+async function ensurePack(){ if(Object.keys(PACK).length) return; let fam=null; try{fam=localStorage.getItem('museum-family')}catch(e){} if(!fam) return;
+  try{const r=await fetch('https://akunilczueybkyoaiksa.supabase.co/rest/v1/rpc/museum_get',{method:'POST',headers:{apikey:'sb_publishable_FTw98SWhHvXRiRuIHdfJPg_zZ8DOPsU','Content-Type':'application/json'},body:JSON.stringify({p_id:fam+'-img'})}); const j=await r.json(); if(j&&j.imgs){PACK=j.imgs; try{localStorage.setItem('museum-img',JSON.stringify(PACK))}catch(e){} build();}}catch(e){} }
+const board=$('#board'), label=$('#label');
+let N=10, deck=[], open=[], lock=false, moves=0, found=0, labelTimer=null, used=[], missed=new Set();
+
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function pickPairs(n){
+  if(n>=PAIRS.length) return PAIRS.slice();
+  // разминка: одна «ловушка» (пара героев из одной книги/автора) + случайные остальные
+  const groups=['tolstoy','tolkien','dahl'];
+  const g=groups[Math.floor(Math.random()*groups.length)];
+  const trap=PAIRS.filter(p=>p.group===g);
+  const rest=shuffle(PAIRS.filter(p=>p.group!==g)).slice(0,n-trap.length);
+  return shuffle(trap.concat(rest));
+}
+
+function build(){
+  used=pickPairs(N);
+  deck=shuffle(used.flatMap(p=>[{p,kind:'pic'},{p,kind:'txt'}]));
+  board.innerHTML='';
+  deck.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='card';b.dataset.i=i;
+    b.setAttribute('aria-label','Закрытая карточка '+(i+1));
+    const front=c.kind==='pic'
+      ? `<div class="face front pic"><img src="${IMG(c.p.img)}" alt="${c.p.hero}"></div>`
+      : `<div class="face front txt"><div class="hero">${c.p.hero}</div><div class="rule"></div><div class="auth">${c.p.auth}</div><div class="book">${c.p.book}</div></div>`;
+    b.innerHTML=`<div class="inner"><div class="face back">${EMBLEM}</div>${front}</div>`;
+    b.addEventListener('click',()=>flip(b));
+    board.appendChild(b);
+  });
+  moves=0;found=0;open=[];lock=false;missed=new Set();
+  $('#moves').textContent=0;$('#found').textContent=0;$('#total').textContent=used.length;
+  hideLabel();layout();
+}
+
+const R=0.84;
+function layout(){
+  const n=deck.length, st=$('#stage');
+  const W=st.clientWidth-28, H=st.clientHeight-28, gap=Math.max(8,Math.min(16,W/80));
+  let best={s:0};
+  for(let cols=2;cols<=n;cols++){
+    const rows=Math.ceil(n/cols);
+    const cw=(W-gap*(cols-1))/cols, ch=(H-gap*(rows-1))/rows;
+    const w=Math.min(cw,ch*R); // пропорция карточки
+    if(w>best.s) best={s:w,cols};
+  }
+  board.style.setProperty('--gap',gap+'px');
+  const cw=Math.floor(best.s);
+  board.style.setProperty('--cw',cw+'px');
+  board.style.setProperty('--ch',Math.floor(cw/R)+'px');
+  board.style.setProperty('--bw',(cw*best.cols+gap*(best.cols-1)+1)+'px');
+}
+addEventListener('resize',layout);
+
+function flip(b){
+  if(lock||b.classList.contains('up')||b.classList.contains('done')) return;
+  if(open.length===0) hideLabel();
+  b.classList.add('up');
+  const c=deck[b.dataset.i];
+  b.setAttribute('aria-label',c.kind==='pic'?'Картина: '+c.p.hero:'Подпись: '+c.p.hero+', '+c.p.auth+', '+c.p.book);
+  open.push(b);
+  if(open.length<2) return;
+  moves++;$('#moves').textContent=moves;
+  const [a,d]=open.map(x=>deck[x.dataset.i]);
+  if(a.p.id===d.p.id && a.kind!==d.kind){
+    open.forEach(x=>{x.classList.add('done');x.setAttribute('aria-disabled','true')});
+    open=[];found++;$('#found').textContent=found;
+    showLabel(a.p,false);
+    if(found===used.length) setTimeout(finish,1400);
+  }else{
+    lock=true;
+    const trap=a.p.group && a.p.group===d.p.group && a.kind!==d.kind;
+    if(trap){ missed.add(a.p.id); missed.add(d.p.id); showLabel({img:(a.kind==='pic'?a:d).p.img,hero:'Почти! Это ловушка',auth:'',book:'',fact:TRAP[a.p.group]},true);
+      open.forEach(x=>x.classList.add('shake')); }
+    setTimeout(()=>{open.forEach(x=>{x.classList.remove('up','shake');x.setAttribute('aria-label','Закрытая карточка')});open=[];lock=false},trap?1900:1100);
+  }
+}
+
+function showLabel(p,warn){
+  clearTimeout(labelTimer);
+  label.classList.toggle('warn',!!warn);
+  label.querySelector('img').src=IMG(p.img);
+  label.querySelector('.t').textContent=p.hero;
+  label.querySelector('.s').textContent=p.auth?p.auth+', '+p.book:'';
+  label.querySelector('p').textContent=p.fact;
+  label.classList.add('show');
+  labelTimer=setTimeout(hideLabel,warn?4500:8000);
+}
+function hideLabel(){label.classList.remove('show')}
+label.addEventListener('click',hideLabel);
+
+const GID={oleg:'g01',nast:'g02',kost:'g03',zhil:'g04',kvakli:'g05',cosette:'g06',gand:'g07',goll:'g08',mat:'g09',witch:'g10'};
+function finish(){
+  hideLabel();
+  if(used.length===PAIRS.length){ const n=used.length; const rate=moves<=n+4?'easy':moves<=n*2?'ok':'hard';
+    try{localStorage.setItem('museum-result',JSON.stringify({q:'gal1',rate,missed:[...missed].map(i=>GID[i]),at:Date.now()}))}catch(e){} }
+  const key='lg-best-'+used.length, best=+store(key)||0;
+  let msg=`Все ${used.length} героев нашли свои подписи за <b>${moves}</b> ходов.`;
+  const perfect=used.length;
+  if(!best||moves<best){store(key,moves); if(best) msg+=' Это новый рекорд!';}
+  else msg+=` Твой рекорд — ${best} ходов.`;
+  if(moves<=perfect+4) msg+=' Почти без ошибок — отличная память!';
+  msg+='<br>А теперь проверь себя: спрячь подписи, назови вслух героя, автора и книгу — и открой подпись щелчком.';
+  $('#finalText').innerHTML=msg;
+  $('#recap').innerHTML=used.map(p=>`<figure><img src="${IMG(p.img)}" alt=""><figcaption><b>${p.hero}</b>${p.auth}, <i>${p.book}</i></figcaption></figure>`).join('');
+  $('#recap').classList.remove('quiz');$('#selfcheck').textContent='Проверь себя: спрятать подписи';
+  $('#recap').querySelectorAll('figure').forEach(f=>f.addEventListener('click',()=>f.classList.add('shown')));
+  $('#final').classList.add('show');
+}
+$('#selfcheck').addEventListener('click',()=>{const r=$('#recap');const q=r.classList.toggle('quiz');r.querySelectorAll('figure').forEach(f=>f.classList.remove('shown'));$('#selfcheck').textContent=q?'Показать все подписи':'Проверь себя: спрятать подписи';});
+
+document.querySelectorAll('.modes .btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.modes .btn').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  N=+b.dataset.n;build();
+}));
+$('#restart').addEventListener('click',build);
+$('#again').addEventListener('click',()=>{$('#final').classList.remove('show');build()});
+$('#go').addEventListener('click',()=>{$('#intro').classList.remove('show');layout()});
+// предзагрузка картинок
+build(); ensurePack();
+</script>
+</body>
+</html>

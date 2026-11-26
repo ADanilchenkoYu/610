@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Классики — детям</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday, for a 9-year-old: warm, clear, calm about mistakes
+   IDEA a page from a school poetry anthology, one stanza per card, the season painted in the band above
+   PICTURE the stanza card itself, large, under a season band (snow / rain-and-leaves / sea with a sail)
+   COLOUR each round owns one colour: winter blue, golden autumn, sea teal; white card, dark ink
+   TYPE Nunito 800 for headings and buttons, Literata for the poems
+   LAYOUT one column up to 720px: title and round tabs, band, card, answers; same order on a phone */
+:root{color-scheme:light dark;--bg:light-dark(#f4f7fb,#0e1522);--card:light-dark(#ffffff,#172235);--ink:light-dark(#14202e,#e9eef6);--soft:light-dark(#5b6878,#a6b2c3);--line:light-dark(#dbe3ec,#2a3850);--c:#1f4fb8;--c2:light-dark(#e6eefc,#1b2c4f);--ok:#1f8a5b;--okbg:light-dark(#e3f5ec,#123a2a);--miss:#b8670f;--missbg:light-dark(#fff1dc,#3b2a12)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+body[data-r="1"]{--c:#b7791f;--c2:light-dark(#fbf1dc,#3a2c12)}
+body[data-r="2"]{--c:#0f7482;--c2:light-dark(#dff3f5,#103238)}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:720px;margin:0 auto;padding:20px max(16px,4vw) 48px}
+h1{font-weight:900;font-size:clamp(30px,6vw,44px);line-height:1.05;letter-spacing:-.02em;margin:4px 0 6px}
+.lead{color:var(--soft);margin:0 0 16px;font-size:16px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tab{font:800 15px Nunito,sans-serif;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 14px;min-height:44px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tab[aria-current=true]{border-color:var(--c);background:var(--c);color:#fff}
+.tab small{font-weight:700;opacity:.8}
+.band{height:120px;border-radius:20px 20px 0 0;background:var(--c);position:relative;overflow:hidden}
+.band svg{position:absolute;inset:0;width:100%;height:100%}
+.card{background:var(--card);border:1px solid var(--line);border-top:0;border-radius:0 0 20px 20px;padding:22px clamp(18px,4vw,32px) 26px}
+.meta{display:flex;justify-content:space-between;gap:12px;color:var(--soft);font-weight:700;font-size:15px}
+.dots{display:flex;gap:6px}.dot{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dot.ok{background:var(--ok)}.dot.hint{background:#7fb99c}.dot.miss{background:var(--miss)}.dot.now{outline:2px solid var(--c);outline-offset:2px}
+.task{font-weight:800;font-size:19px;margin:14px 0 10px}
+.poem{font:400 clamp(19px,3.4vw,23px)/1.6 Literata,Georgia,serif;white-space:pre-line;margin:6px 0 18px;padding-left:16px;border-left:4px solid var(--c)}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font:800 16px Nunito,sans-serif;min-height:48px;padding:10px 18px;border-radius:14px;border:2px solid var(--c);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.main{background:var(--c);color:#fff}
+.btn:focus-visible,.tab:focus-visible,.opt:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+.btn svg{width:20px;height:20px;flex:none}
+.hint{background:var(--c2);border-radius:14px;padding:12px 16px;margin:14px 0 0}
+.opts{display:grid;gap:10px;margin-top:16px}
+.opt{font:800 19px Nunito,sans-serif;text-align:left;min-height:56px;padding:12px 18px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.opt:hover:not([disabled]){border-color:var(--c)}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.picked{border-color:var(--miss);background:var(--missbg)}
+.opt[disabled]{cursor:default}
+.fb{margin-top:16px;border-radius:16px;padding:16px 18px;background:var(--okbg)}
+.fb.miss{background:var(--missbg)}
+.fb b{font-size:19px}
+.fb p{margin:6px 0}
+.fb a{color:var(--ink);font-weight:800}
+.sum li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sum ul{list-style:none;padding:0;margin:12px 0 18px}
+.mark{white-space:nowrap;font-weight:800}
+.big{font-size:clamp(40px,9vw,64px);font-weight:900;line-height:1;color:var(--c)}
+details{margin-top:28px;color:var(--soft);font-size:15px}
+summary{cursor:pointer;font-weight:800;color:var(--ink);min-height:44px;display:flex;align-items:center}
+details li{margin:4px 0}
+@media(prefers-reduced-motion:no-preference){.card{animation:in .35s ease-out}@keyframes in{from{opacity:.3;transform:translateY(6px)}}}
+</style>
+</head>
+<body data-r="0">
+<a href="../" style="position:fixed;top:10px;right:12px;z-index:50;background:#f3d98f;color:#3a1a06;border:1px solid #8a6224;border-radius:10px;padding:7px 12px;font:700 15px Georgia,serif;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.3)">← В музей</a>
+<div class="wrap">
+  <h1>Классики — детям</h1>
+  <p class="lead">Послушай или прочитай строфу до конца и угадай поэта. Три раунда по пять стихотворений.</p>
+  <nav class="tabs" id="tabs" aria-label="Раунды"></nav>
+  <div class="band" aria-hidden="true"><svg id="band" preserveAspectRatio="xMidYMax slice" viewBox="0 0 720 120"></svg></div>
+  <main class="card" id="card" aria-live="polite"></main>
+  <details>
+    <summary>Для взрослого: что изменено по сравнению с LearningApps</summary>
+    <ul>
+      <li>Те же 15 стихотворений, авторы и почти все неверные варианты, что у Марка. Опечатка «Бельмонт» исправлена на Бальмонта; Михалков в «Зимнем утре» заменён на Тютчева, чтобы выбор шёл между поэтами одной эпохи.</li>
+      <li>Варианты ответа появляются только после того, как строфа прочитана или прослушана до конца. Это тренирует привычку дочитывать задание.</li><li>Строфы озвучены в ElevenLabs (модель Eleven v4) голосом «Станислав»; запись актёра с YouTube — после ответа.</li>
+      <li>Засчитывается первый ответ. После ошибки сразу видно, кто автор и по какой примете узнать его в следующий раз, — вместо «К сожалению, неверно» и угадывания перебором.</li>
+      <li>Подсказка — примета поэта без имени. С ней ответ засчитывается светлой точкой: можно дойти до ответа самому, не сдаваясь.</li>
+      <li>Пятнадцать вопросов разбиты на три тематических раунда по 5–7 минут — удобно для дороги. В конце раунда — ошибки ещё раз.</li>
+      <li>Запись актёра с YouTube открывается после ответа: в LearningApps видео шло первым, и перед ним была реклама.</li>
+    </ul>
+  </details>
+</div>
+<script>
+{
+const P={tyutchev:['Фёдор Тютчев','Этот поэт служил дипломатом и много лет жил в Германии. Больше всего он любил писать о природе в миг перемены: гроза, оттепель, зима уступает весне.'],
+fet:['Афанасий Фет','Поэт-«художник»: его стихи похожи на быстрый набросок красками — утро, свет, листья и радость от всего сразу.'],
+pushkin:['Александр Пушкин','Самый главный поэт России. Любимое время года у него — осень, а лучшие стихи он писал в деревне Болдино.'],
+nekrasov:['Николай Некрасов','Поэт крестьянской жизни: в его стихах деревня, зимний лес, тяжёлый труд и крестьянские дети.'],
+lermontov:['Михаил Лермонтов','Поэт-офицер, которого отправили служить на Кавказ. Его герои всегда одиноки: парус, утёс, тучки-странники.'],
+esenin:['Сергей Есенин','Поэт XX века из рязанской деревни. Писал коротко и напевно — о берёзах, снеге и родной стороне.'],
+surikov:['Иван Суриков','Поэт-самоучка из крестьян. Писал простыми словами о деревенском детстве.'],
+zhukovsky:['Василий Жуковский','Учитель Пушкина и воспитатель царского сына. Мастер баллад — страшных и таинственных историй в стихах.'],
+aktolstoy:['Алексей К. Толстой','Не тот Толстой, что написал «Войну и мир», а его родственник-поэт. Многие его стихи стали песнями-романсами.'],
+blok:['Александр Блок'],sasha:['Саша Чёрный'],bunin:['Иван Бунин'],balmont:['Константин Бальмонт']};
+const Q=[
+{r:0,a:'tyutchev',x:['blok','fet'],t:'«Чародейкою Зимою…»',y:'1852',yt:'_VwCZNpqURQ',s:0,w:'Запись на YouTube',
+p:`Чародейкою Зимою
+Околдован, лес стоит —
+И под снежной бахромою,
+Неподвижною, немою,
+Чудной жизнью он блестит.`,k:'Лес не просто в снегу — он заколдован и замер. Тютчев любит такие волшебные минуты в природе.'},
+{r:0,a:'pushkin',x:['tyutchev','balmont'],t:'«Зимнее утро»',y:'1829',yt:'yrgn1TTkxt0',s:0,w:'Запись на YouTube',
+p:`Мороз и солнце; день чудесный!
+Ещё ты дремлешь, друг прелестный —
+Пора, красавица, проснись:
+Открой сомкнуты негой взоры
+Навстречу северной Авроры,
+Звездою севера явись!`,k:'«Мороз и солнце; день чудесный!» — одна из самых известных строк Пушкина. Запомни её как пароль.'},
+{r:0,a:'nekrasov',x:['pushkin','blok'],t:'«Мороз, Красный нос» (отрывок)',y:'1863',yt:'JzEZas7DYKE',s:7,w:'Читает Михаил Полицеймако',
+p:`Не ветер бушует над бором,
+Не с гор побежали ручьи —
+Мороз-воевода дозором
+Обходит владенья свои.`,k:'Мороз-воевода — сказочный хозяин леса из поэмы о крестьянской семье. Деревня и зимний лес — это Некрасов.'},
+{r:0,a:'esenin',x:['pushkin','balmont'],t:'«Берёза»',y:'1913',yt:'2p9YQGjyiwc',s:0,w:'Запись на YouTube',
+p:`Белая берёза
+Под моим окном
+Принакрылась снегом,
+Точно серебром.`,k:'Короткие напевные строчки и берёза под окном — это совсем молодой Есенин.'},
+{r:0,a:'nekrasov',x:['zhukovsky','esenin'],t:'«Крестьянские дети» (отрывок)',y:'1861',yt:'uoRW3uSnn0Q',s:0,w:'Мультфильм в картинках',
+p:`Однажды, в студёную зимнюю пору,
+Я из лесу вышел; был сильный мороз.
+Гляжу, поднимается медленно в гору
+Лошадка, везущая хворосту воз.`,k:'Дальше появится «мужичок с ноготок». Крестьянский мальчик за взрослой работой — снова Некрасов.'},
+{r:1,a:'tyutchev',x:['esenin','sasha'],t:'«Зима недаром злится…»',y:'1836',yt:'O9jy7XzVsG4',s:0,w:'Запись на YouTube',
+p:`Зима недаром злится,
+Прошла её пора —
+Весна в окно стучится
+И гонит со двора.`,k:'Зима и Весна спорят, как две живые героини. У Тютчева природа всегда живая и меняется на глазах.'},
+{r:1,a:'tyutchev',x:['fet','lermontov'],t:'«Весенняя гроза»',y:'1828',yt:'Ni4eSl9fIFg',s:10,w:'Читает Георгий Тараторкин',
+p:`Люблю грозу в начале мая,
+Когда весенний, первый гром,
+Как бы резвяся и играя,
+Грохочет в небе голубом.`,k:'«Люблю грозу в начале мая» — самая знаменитая строка Тютчева. По ней его узнают все.'},
+{r:1,a:'fet',x:['tyutchev','pushkin'],t:'«Я пришёл к тебе с приветом…»',y:'1843',yt:'NmXi-M5SR14',s:0,w:'Запись на YouTube',
+p:`Я пришёл к тебе с приветом,
+Рассказать, что солнце встало,
+Что оно горячим светом
+По листам затрепетало;`,k:'Всё стихотворение — одна длинная радостная фраза: солнце, листья, чувство. Так пишет Фет.'},
+{r:1,a:'pushkin',x:['nekrasov','zhukovsky'],t:'«Осень» (отрывок)',y:'1833',yt:'cMY9q_DMhNQ',s:12,w:'Читает Иннокентий Смоктуновский',
+p:`Унылая пора! очей очарованье!
+Приятна мне твоя прощальная краса —
+Люблю я пышное природы увяданье,
+В багрец и в золото одетые леса…`,k:'Осень — любимое время года Пушкина. «В багрец и в золото одетые леса» — его строка.'},
+{r:1,a:'aktolstoy',x:['esenin','lermontov'],t:'«Колокольчики мои…»',y:'1840-е',yt:'r3SEyx8IeKw',s:0,w:'Поёт Сергей Лемешев — это романс',
+p:`Колокольчики мои,
+Цветики степные!
+Что глядите на меня,
+Тёмно-голубые?`,k:'Эти стихи поют как песню. Автор — Алексей Константинович Толстой, не путай со Львом Толстым.'},
+{r:2,a:'lermontov',x:['zhukovsky','pushkin'],t:'«Тучи»',y:'1840',yt:'dUn58m1krGw',s:0,w:'Запись на YouTube',
+p:`Тучки небесные, вечные странники!
+Степью лазурною, цепью жемчужною
+Мчитесь вы, будто как я же, изгнанники
+С милого севера в сторону южную.`,k:'Тучки — «изгнанники», как сам Лермонтов, когда его отправили на Кавказ.'},
+{r:2,a:'lermontov',x:['esenin','bunin'],t:'«Утёс»',y:'1841',yt:'QVGWDjAC4_0',s:0,w:'Запись на YouTube',
+p:`Ночевала тучка золотая
+На груди утёса-великана;
+Утром в путь она умчалась рано,
+По лазури весело играя;`,k:'Тучка улетела, а великан остался один. Одиночество — главная тема Лермонтова.'},
+{r:2,a:'lermontov',x:['balmont','zhukovsky'],t:'«Парус»',y:'1832',yt:'nvqwH2F6ykA',s:0,w:'Читает Артём Лысков',
+p:`Белеет парус одинокой
+В тумане моря голубом!..
+Что ищет он в стране далёкой?
+Что кинул он в краю родном?..`,k:'Одинокий парус-странник — опять лермонтовский герой. Поэту было всего семнадцать лет.'},
+{r:2,a:'surikov',x:['nekrasov','esenin'],t:'«Детство» (отрывок)',y:'1865',yt:'zCsrroTFT_c',s:4,w:'Запись на YouTube',
+p:`Вот моя деревня;
+Вот мой дом родной;
+Вот качусь я в санках
+По горе крутой;`,k:'«Вот моя деревня» — Иван Суриков вспоминает своё деревенское детство. Его же: «Белый снег пушистый в воздухе кружится».'},
+{r:2,a:'zhukovsky',x:['pushkin','fet'],t:'«Светлана» (отрывок)',y:'1813',yt:'QLQXauLZBFU',s:39,w:'Читает Маргарита Терехова',
+p:`Раз в крещенский вечерок
+Девушки гадали:
+За ворота башмачок,
+Сняв с ноги, бросали;`,k:'Гадание, ночь и тайна — так начинается баллада. Главный мастер русских баллад — Жуковский.'}
+].map((q,i)=>({...q,id:i}));
+const R=[['Зима','Узнай зимние стихи'],['Весна, лето, осень','Гроза, солнце, листопад'],['Странники и сказки','Тучи, паруса и баллады']];
+const KEY='klassiki-deti-v1';
+let S={r:0,i:[0,0,0],res:{},queue:[null,null,null]};
+try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.res)S={...S,...v}}catch(e){}
+let ui={read:false,hint:false,picked:null,order:null};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const list=r=>S.queue[r]||Q.filter(q=>q.r===r).map(q=>q.id);
+const player=new Audio();let playing=null;const blobs={};
+async function src(id){if(blobs[id])return blobs[id];try{const r=await fetch('audio/q'+id+'.mp3');if(!r.ok)throw 0;blobs[id]=URL.createObjectURL(await r.blob())}catch(e){blobs[id]='audio/q'+id+'.mp3'}return blobs[id]}
+function stopAudio(){try{player.pause()}catch(e){}playing=null}
+player.addEventListener('ended',()=>{playing=null;if(!ui.read)ui.read=true;render()});
+player.addEventListener('pause',()=>{if(playing!==null&&!player.ended){playing=null;render()}});
+const icoSpeak='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9a4 4 0 0 1 0 6M19.5 6.5a8 8 0 0 1 0 11"/></svg>';
+const icoHint='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>';
+const card=document.getElementById('card'),tabs=document.getElementById('tabs'),band=document.getElementById('band');
+function drawBand(r){
+  let s=7,rnd=()=>(s=s*16807%2147483647)/2147483647,h='';
+  if(r===0){h+='<path d="M0 95 Q180 70 360 92 T720 88 V120 H0z" fill="#fff" opacity=".95"/><path d="M0 105 Q200 90 420 104 T720 100 V120 H0z" fill="#dbe7ff"/>';
+    for(let i=0;i<60;i++){const x=rnd()*720,y=rnd()*85,rr=1+rnd()*3.2;h+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(1)}" fill="#fff" opacity="${(.5+rnd()*.5).toFixed(2)}"/>`}
+    for(let i=0;i<9;i++){const x=40+i*80+rnd()*30,hh=34+rnd()*26;h+=`<path d="M${x} ${96-hh} l${14} ${hh} h${-28}z" fill="#163a86" opacity=".55"/><path d="M${x} ${96-hh} l7 ${hh*.5} h-14z" fill="#fff" opacity=".8"/>`}}
+  else if(r===1){h+='<circle cx="610" cy="40" r="28" fill="#ffd773"/>';
+    for(let i=0;i<46;i++){const x=rnd()*720,y=rnd()*110,a=rnd()*360,c=['#e8540f','#f2b134','#c2410c','#fde68a'][i%4];h+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="9" ry="4.5" fill="${c}" transform="rotate(${a.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})" opacity=".9"/>`}
+    for(let i=0;i<22;i++){const x=rnd()*560;h+=`<path d="M${x.toFixed(1)} ${(rnd()*30).toFixed(1)} l-10 22" stroke="#fff" stroke-width="2" opacity=".55"/>`}}
+  else{h+='<path d="M0 78 Q90 68 180 78 T360 78 T540 78 T720 78 V120 H0z" fill="#0b5662"/><path d="M0 92 Q90 84 180 92 T360 92 T540 92 T720 92 V120 H0z" fill="#084650"/>';
+    h+='<path d="M486 76 h92 l-12 14 h-70z" fill="#f5f1e8"/><path d="M528 18 v58" stroke="#f5f1e8" stroke-width="3"/><path d="M531 20 q34 26 30 52 h-30z" fill="#fff"/><path d="M525 26 q-26 22 -22 46 h22z" fill="#e9f2f3"/>';
+    for(let i=0;i<5;i++){const x=40+i*130+rnd()*40,y=14+rnd()*28;h+=`<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(34+rnd()*20).toFixed(0)}" ry="10" fill="#fff" opacity=".35"/>`}}
+  band.innerHTML=h;
+}
+function renderTabs(){
+  tabs.innerHTML=R.map((t,r)=>{const ids=Q.filter(q=>q.r===r).map(q=>q.id),done=ids.filter(id=>S.res[id]).length;
+    return `<button class="tab" data-tab="${r}" aria-current="${S.r===r}">${esc(t[0])} <small>${done}/5</small></button>`}).join('');
+}
+function render(){
+  document.body.dataset.r=S.r;drawBand(S.r);renderTabs();
+  const ids=list(S.r),i=S.i[S.r];
+  if(i>=ids.length)return summary();
+  const q=Q[ids[i]];
+  if(!ui.order)ui.order=shuffle([q.a,...q.x]);
+  const res=S.res[q.id],answered=ui.picked!==null;
+  const dots=ids.map((id,k)=>`<span class="dot ${k<i||(k===i&&answered)?(S.res[id]||''):''} ${k===i?'now':''}"></span>`).join('');
+  let h=`<div class="meta"><span>${esc(R[S.r][0])} · ${i+1} из ${ids.length}${S.queue[S.r]?' · ошибки ещё раз':''}</span><span class="dots">${dots}</span></div>
+  <div class="task">Чьи это стихи?</div><div class="poem">${esc(q.p)}</div><div class="row">`;
+  if(!answered){
+    h+=`<button class="btn" id="speak">${icoSpeak}${playing===q.id?'Пауза':'Послушать'}</button>`;
+    if(!ui.hint)h+=`<button class="btn" id="hintb">${icoHint}Подсказка</button>`;
+  }
+  h+='</div>';
+  if(ui.hint&&!answered)h+=`<div class="hint"><b>Примета поэта.</b> ${esc(P[q.a][1])}</div>`;
+  if(!ui.read)h+=`<div class="row" style="margin-top:16px"><button class="btn main" id="readb">Дочитал до конца — показать поэтов</button></div>`;
+  else{
+    h+='<div class="opts">'+ui.order.map(k=>{let c='';if(answered){if(k===q.a)c='right';else if(k===ui.picked)c='picked'}
+      return `<button class="opt ${c}" data-opt="${k}" ${answered?'disabled':''}>${esc(P[k][0])}</button>`}).join('')+'</div>';
+  }
+  if(answered){
+    const ok=ui.picked===q.a;
+    h+=`<div class="fb ${ok?'':'miss'}"><b>${ok?(ui.hint?'Верно — с подсказкой, и это честная работа.':'Верно! Ты дочитал и узнал.'):'Это '+esc(P[q.a][0])+'.'}</b>
+    <p>${esc(q.t)}, ${esc(q.y)}</p><p>${ok?'':'<b style="font-size:17px">Как узнать в следующий раз:</b> '}${esc(q.k)}</p>
+    <p><a href="https://www.youtube.com/watch?v=${esc(q.yt)}${q.s?'&t='+q.s+'s':''}" target="_blank" rel="noopener">Послушать целиком</a> — ${esc(q.w)}</p></div>
+    <div class="row" style="margin-top:16px"><button class="btn main" id="next">${i+1<ids.length?'Дальше':'Итоги раунда'}</button></div>`;
+  }
+  card.innerHTML=h;
+}
+function summary(){
+  const ids=Q.filter(q=>q.r===S.r).map(q=>q.id),ok=ids.filter(id=>S.res[id]==='ok').length,hint=ids.filter(id=>S.res[id]==='hint').length,miss=ids.filter(id=>S.res[id]==='miss');
+  const lab={ok:'узнал сам',hint:'с подсказкой',miss:'повторить'};
+  card.innerHTML=`<div class="meta"><span>${esc(R[S.r][0])} · итоги</span></div>
+  <p class="big">${ok+hint} из 5</p><p style="margin:4px 0 0">${ok} сам${hint?', '+hint+' с подсказкой':''}${miss.length?', '+miss.length+' ещё повторим':''}.</p>
+  <div class="sum"><ul>${ids.map(id=>`<li><span>${esc(Q[id].t)} — ${esc(P[Q[id].a][0])}</span><span class="mark" style="color:${S.res[id]==='miss'?'var(--miss)':'var(--ok)'}">${lab[S.res[id]]||'—'}</span></li>`).join('')}</ul></div>
+  <div class="row">${miss.length?'<button class="btn main" id="again">Ошибки ещё раз</button>':''}
+  ${S.r<2?'<button class="btn '+(miss.length?'':'main')+'" id="nextr">Следующий раунд</button>':''}
+  <button class="btn" id="reset">Пройти раунд заново</button></div>`;
+}
+function go(r){S.r=r;ui={read:false,hint:false,picked:null,order:null};save();render();window.scrollTo({top:0,behavior:'smooth'})}
+card.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const ids=list(S.r),q=Q[ids[S.i[S.r]]];
+  if(b.id==='readb'){ui.read=true;render()}
+  else if(b.id==='hintb'){ui.hint=true;render()}
+  else if(b.id==='speak'){if(playing===q.id){stopAudio();render()}else{src(q.id).then(u=>{if(player.src!==u)player.src=u;player.currentTime=0;playing=q.id;render();return player.play()}).catch(()=>{playing=null;render()})}}
+  else if(b.dataset.opt){stopAudio();ui.picked=b.dataset.opt;S.res[q.id]=ui.picked===q.a?(ui.hint?'hint':'ok'):'miss';save();render()}
+  else if(b.id==='next'){stopAudio();S.i[S.r]++;ui={read:false,hint:false,picked:null,order:null};save();render()}
+  else if(b.id==='again'){S.queue[S.r]=Q.filter(x=>x.r===S.r&&S.res[x.id]==='miss').map(x=>x.id);S.i[S.r]=0;go(S.r)}
+  else if(b.id==='nextr'){S.queue[S.r]=null;go(S.r+1)}
+  else if(b.id==='reset'){Q.filter(x=>x.r===S.r).forEach(x=>delete S.res[x.id]);S.queue[S.r]=null;S.i[S.r]=0;go(S.r)}
+});
+tabs.addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){stopAudio();go(+b.dataset.tab)}});
+render();
+}
+</script>
+</body>
+</html>
