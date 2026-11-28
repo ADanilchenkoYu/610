@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Герои Эллады</title>
+<style>
+@font-face{font-family:"Lora";src:url("../fonts/Lora-Variable.ttf") format("truetype");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Lora";src:url("../fonts/Lora-Italic-Variable.ttf") format("truetype");font-weight:400 700;font-style:italic;font-display:swap}
+:root{--wall:#5c1e24;--gold:#d9b35e;--hi:#f3d98f;--lo:#8a6224;--paper:#f6eedb;--ink:#2b1a10;--muted:#6b5440;--ok:#2f7a45;--bad:#b3412e;--sea:#2f5f7a;--sea2:#3d7894}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:"Lora",Georgia,serif;color:var(--ink);background:repeating-linear-gradient(90deg,#5c1e24 0 44px,#621f26 44px 88px);font-size:18px;min-height:100vh;-webkit-text-size-adjust:100%}
+button,input{font:inherit}
+header{background:linear-gradient(#3a1216,#2c0d10);border-bottom:5px solid var(--gold);box-shadow:0 3px 0 var(--lo);padding:10px 18px;padding-top:max(10px,env(safe-area-inset-top));color:var(--hi)}
+.top{display:flex;align-items:center;gap:10px}
+h1{margin:0;font-size:clamp(19px,2.6vw,30px);letter-spacing:.05em;text-transform:uppercase;flex:1}
+h1 small{display:block;font-size:.5em;letter-spacing:.08em;color:var(--gold);font-style:italic;text-transform:none;font-weight:400}
+.back{text-decoration:none;border:1px solid var(--gold);color:var(--hi);border-radius:8px;padding:5px 10px;font-size:15px;white-space:nowrap}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav button{background:transparent;border:1px solid var(--gold);color:var(--hi);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px}
+nav button[aria-current="true"]{background:var(--paper);color:var(--wall);font-weight:700}
+nav .st{margin-left:4px;color:var(--gold)}
+main{max-width:920px;margin:0 auto;padding:18px 14px 70px}
+.panel{background:var(--paper);border:5px solid var(--gold);border-radius:14px;box-shadow:0 0 0 2px var(--lo),0 14px 34px rgba(0,0,0,.45);padding:20px 22px;margin-bottom:18px}
+.panel h2{margin:0 0 6px;color:var(--wall);font-size:clamp(21px,2.5vw,28px)}
+.lead{font-size:clamp(16px,1.8vw,19px);line-height:1.45;margin:4px 0 10px}
+.muted{color:var(--muted)}
+.btn{cursor:pointer;border-radius:10px;padding:11px 18px;background:linear-gradient(var(--hi),var(--gold));color:#3a1a06;border:1px solid var(--lo);font-weight:700;box-shadow:0 2px 0 var(--lo)}
+.btn.big{font-size:clamp(18px,2.2vw,22px);padding:14px 26px}
+.btn.ghost{background:transparent;box-shadow:none;border-color:var(--wall);color:var(--wall)}
+.btn:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.dots i{width:13px;height:13px;border-radius:50%;background:#e4d6b4;border:2px solid var(--gold)}
+.dots i.ok{background:var(--ok)}.dots i.bad{background:var(--bad)}.dots i.cur{background:var(--hi)}
+.fb{margin-top:12px;padding:12px 16px;border-radius:12px;font-size:clamp(16px,1.7vw,18px);line-height:1.45}
+.fb.ok{background:#e4f3e6;border:2px solid var(--ok)}.fb.bad{background:#f9e3de;border:2px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.key{display:inline-block;background:#fff3d6;border:2px dashed var(--gold);border-radius:10px;padding:2px 8px;font-weight:700;color:var(--wall)}
+/* карточки героев (знакомство) */
+.heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:10px}
+.hc{border:0;padding:0;background:none;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.hc .f{position:relative;border-radius:14px;border:3px solid var(--gold);padding:14px;display:flex;flex-direction:column;gap:8px;min-height:170px}
+.hc .fr{background:#fffaf0;align-items:center;justify-content:center;text-align:center}
+.hc .fr .em{font-size:50px;line-height:1}
+.hc .fr .nm{font-size:24px;font-weight:700;color:var(--wall)}
+.hc .bk{display:none;background:#fff3d6;font-size:15.5px;line-height:1.4;color:var(--ink);animation:fl .35s}
+.hc.flip .fr{display:none}.hc.flip .bk{display:flex}
+@keyframes fl{from{transform:rotateY(70deg);opacity:.3}to{transform:none;opacity:1}}
+.hc .bk b{color:var(--wall)}
+.hc.seen .fr{border-color:var(--ok)}
+.hc.seen .fr::after{content:"✓";position:absolute;top:8px;right:12px;color:var(--ok);font-weight:700}
+.hc .bk .nm2{font-weight:700;color:var(--wall)}
+.lead .key{white-space:nowrap}
+/* выбор */
+.clue{font-size:clamp(19px,2.3vw,24px);text-align:center;margin:10px 0;line-height:1.4}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.choice{cursor:pointer;background:#fffaf0;border:3px solid var(--gold);border-radius:14px;padding:14px 10px;font-size:clamp(17px,2.1vw,21px);font-weight:700;color:var(--ink);line-height:1.25;min-height:58px}
+.choice .em{display:block;font-size:26px;margin-bottom:2px}
+.choice:hover:not(:disabled){background:#fff2cf}
+.choice.right{background:#dff1e2;border-color:var(--ok)}.choice.wrong{background:#f6dcd6;border-color:var(--bad)}
+.choice[aria-pressed="true"]{background:#e3ecf5;border-color:var(--sea)}
+.typed{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.typed input{font-size:22px;padding:10px 14px;border-radius:10px;border:3px solid var(--gold);width:min(360px,100%);background:#fffdf6}
+.hint{font-size:15px;color:var(--muted);text-align:center;margin-top:4px}
+/* карта */
+.map{width:100%;height:auto;display:block;border:3px solid var(--gold);border-radius:12px;background:var(--sea);touch-action:manipulation}
+.place{cursor:pointer}
+.place circle.hit{fill:transparent}
+.place circle.dot{fill:#f6eedb;stroke:#5c1e24;stroke-width:3}
+.place.right circle.dot{fill:#2f7a45;stroke:#fff}
+.place.wrong circle.dot{fill:#b3412e;stroke:#fff}
+.place text{font-family:Lora,Georgia,serif;font-size:17px;font-weight:700;fill:#2b1a10;paint-order:stroke;stroke:#f6eedb;stroke-width:4px}
+.summary{border-collapse:collapse;width:100%;font-size:16px}
+.summary td,.summary th{padding:6px 8px;border-bottom:1px solid #e2d2ad;text-align:left}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--wall);font-weight:700}
+details li{margin:4px 0;line-height:1.4}
+.shake{animation:sh .4s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (max-width:560px){
+ body{font-size:17px}
+ header{padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top))}
+ h1{font-size:18px}h1 small{display:none}
+ nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
+ nav::-webkit-scrollbar{display:none}
+ nav button{white-space:nowrap;flex:0 0 auto}
+ main{padding:12px 10px 60px}.panel{padding:16px 14px}
+ .heroes{grid-template-columns:1fr 1fr;gap:8px}
+ .hc .f{min-height:150px}
+ .hc.flip{grid-column:1/-1}
+ .hc .fr .em{font-size:40px}.hc .fr .nm{font-size:19px}
+ .hc .bk{font-size:16px;padding:12px}
+ .opts{gap:8px}.choice{padding:12px 8px;font-size:16px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><h1>Герои Эллады<small>мифы Древней Греции: запоминаем героев по ключам, местам и историям</small></h1><a class="back" id="back" href="../" hidden>← Музей</a></div>
+  <nav id="nav" aria-label="Залы квиза"></nav>
+</header>
+<main id="main"></main>
+<script>
+'use strict';
+/* ===== Герои. Сюжеты — по классическим пересказам (Н. А. Кун и др.); где версии мифа расходятся, взята самая распространённая ===== */
+const H=[
+ {id:'y01',n:'Одиссей',em:'🐴',myth:'«Одиссея» (Гомер)',place:'itaka',
+  key:'ОДИН вернулся',img:'Из всей команды домой, на Итаку, вернулся <b>один</b> — Одиссей.',
+  s:'Хитроумный царь Итаки. Придумал деревянного коня, чтобы взять Трою, а потом десять лет плыл домой: ослепил циклопа Полифема, назвавшись «Никто», и слушал сирен, привязанный к мачте.',
+  c3:'деревянный конь – циклоп Полифем – Итака',acc:['одиссей','улисс']},
+ {id:'y02',n:'Пенелопа',em:'🧶',myth:'«Одиссея» (Гомер)',place:'itaka',
+  key:'ПЕтли ЛОПаются',img:'Пе-не-<b>ЛОП</b>-а: ночью у неё «лопаются» <b>петли</b> — она распускает то, что соткала днём.',
+  s:'Верная жена Одиссея. Двадцать лет ждала мужа. Женихам сказала, что выберет одного из них, когда доткёт покрывало, — а ночью распускала сотканное за день.',
+  c3:'покрывало – двадцать лет – женихи',acc:['пенелопа']},
+ {id:'y03',n:'Орфей',em:'🎶',myth:'«Орфей и Эвридика»',place:'frakia',
+  key:'ОРкестр',img:'<b>ОР</b>-фей — целый <b>ор</b>кестр в одном человеке: под его лиру танцевали камни и деревья.',
+  s:'Великий певец из Фракии, играл на лире. Спустился в царство мёртвых за женой Эвридикой и почти вывел её, но оглянулся раньше времени — и потерял навсегда. Плавал с аргонавтами: его песня заглушила сирен.',
+  c3:'лира – царство Аида – оглянулся',acc:['орфей']},
+ {id:'y04',n:'Эвридика',em:'🐍',myth:'«Орфей и Эвридика»',place:'frakia',
+  key:'ДИКая змея',img:'Эври-<b>ДИК</b>-а: на лугу её ужалила <b>дик</b>ая змея.',
+  s:'Нимфа, жена Орфея. Умерла от укуса змеи. Боги подземного царства отпустили её с Орфеем, но только если он не оглянется до выхода. Он оглянулся — и она осталась среди теней.',
+  c3:'укус змеи – царство мёртвых – муж-певец',acc:['эвридика','евридика']},
+ {id:'y05',n:'Ясон',em:'🐏',myth:'«Аргонавты»',place:'iolk',
+  key:'«Я — СОН» дракона',img:'Я-<b>СОН</b>: страшный дракон-сторож погрузился в <b>сон</b> — и Ясон снял золотое руно.',
+  s:'Предводитель аргонавтов. На корабле «Арго» приплыл в далёкую Колхиду за золотым руном — шкурой волшебного золотого барана. Руно сторожил дракон.',
+  c3:'корабль «Арго» – золотое руно – Колхида',acc:['ясон']},
+ {id:'y06',n:'Медея',em:'🧪',myth:'«Аргонавты»',place:'kolhida',
+  key:'МЁД',img:'<b>МЕД</b>-ея: представь, как её сонное зелье льётся дракону в пасть, тягучее, как <b>мёд</b>.',
+  s:'Волшебница, дочь царя Колхиды. Помогла Ясону: дала ему мазь от огня быков и усыпила зельем дракона, который сторожил золотое руно. Уплыла с аргонавтами.',
+  c3:'колдунья – Колхида – сонное зелье для дракона',acc:['медея']},
+ {id:'y07',n:'Кастор и Полидевк',em:'♊',myth:'«Аргонавты»',place:'sparta',
+  key:'Близнецы ♊ и ПОЛИ = «много»',img:'<b>Поли</b>-девк: «поли» по-гречески «много» — он побеждал <b>многих</b> в кулачном бою. Кастор — лучший наездник. На небе братья — созвездие <b>Близнецы</b>.',
+  s:'Братья-близнецы из Спарты, аргонавты. Кастор укрощал коней, Полидевк был непобедимым кулачным бойцом. Не захотели расставаться и после смерти: Зевс поместил их на небо — созвездие Близнецы.',
+  c3:'близнецы – кони и кулачный бой – созвездие',acc:['кастор','полидевк','диоскуры','близнецы']},
+ {id:'y08',n:'Минос',em:'🐂',myth:'«Тесей и Минотавр»',place:'krit',
+  key:'МИНОтавр = «бык МИНОСа»',img:'Имя чудовища и значит «<b>бык Миноса</b>»: <b>Мино</b>-тавр (тавр — бык).',
+  s:'Могучий царь острова Крит. Велел мастеру Дедалу построить лабиринт, где жил Минотавр — человек с головой быка. Афины платили Миносу страшную дань: юношей и девушек на съедение чудовищу.',
+  c3:'Крит – лабиринт – дань из Афин',acc:['минос']},
+ {id:'y09',n:'Тесей',em:'🧵',myth:'«Тесей и Минотавр»',place:'afiny',
+  key:'ТЕСно',img:'<b>ТЕС</b>-ей: в <b>тес</b>ном лабиринте он шёл, разматывая нить Ариадны.',
+  s:'Афинский царевич. Поплыл на Крит с данью, убил Минотавра и по нити Ариадны вышел из лабиринта. На обратном пути забыл сменить чёрный парус на белый — и отец, царь Эгей, бросился в море. С тех пор оно Эгейское.',
+  c3:'клубок нити – Минотавр – чёрный парус',acc:['тесей']},
+ {id:'y10',n:'Геракл',em:'🦁',myth:'«Двенадцать подвигов Геракла»',place:'fivy',
+  key:'ГЕРой · 12 подвигов = 12 месяцев',img:'<b>Гер</b>-акл — главный <b>гер</b>ой Греции. Подвигов двенадцать — как месяцев в году.',
+  s:'Сильнейший из героев, сын Зевса, родился в Фивах. Совершил двенадцать подвигов по приказу царя Эврисфея: задушил Немейского льва, победил Лернейскую гидру, очистил авгиевы конюшни. Плыл и с аргонавтами, но сошёл с корабля в пути.',
+  c3:'Немейский лев – двенадцать подвигов – Эврисфей',acc:['геракл','геркулес']},
+];
+const HM=Object.fromEntries(H.map(h=>[h.id,h]));
+/* ===== «Кто это?» — различение похожих (ловушки) ===== */
+const WHO=[
+ ['Его песня заглушила сирен, и корабль проплыл мимо них.','y03','y01','Орфей пел на «Арго». А Одиссей слушал сирен, привязанный к мачте, — не перепутай!'],
+ ['Слушал пение сирен, привязанный к мачте корабля.','y01','y03','Это Одиссей. Своим спутникам он залепил уши воском.'],
+ ['Двадцать лет ждала мужа и хитро обманывала женихов.','y02','y04','Пенелопа ждала Одиссея. Эвридика — та, за которой муж спустился в царство мёртвых.'],
+ ['За ней муж спустился в царство мёртвых.','y04','y02','Эвридика. Орфей вывел бы её, если бы не оглянулся.'],
+ ['Колдунья, дочь царя далёкой Колхиды.','y06','y05','Медея. Без её зелья Ясону было не справиться с драконом.'],
+ ['Повёл корабль «Арго» за золотым руном.','y05','y01','Ясон — предводитель аргонавтов. Одиссей плавал в другом мифе, «Одиссее».'],
+ ['Велел построить лабиринт для чудовища.','y08','y09','Минос, царь Крита. А Тесей — тот, кто это чудовище победил.'],
+ ['Победил чудовище в лабиринте и вышел по нити.','y09','y10','Тесей. Геракл — тоже победитель чудовищ, но в лабиринт ходил не он.'],
+ ['Задушил Немейского льва и очистил авгиевы конюшни.','y10','y09','Геракл: это два из его двенадцати подвигов.'],
+ ['Братья, ставшие созвездием на небе.','y07','y05','Кастор и Полидевк — созвездие Близнецы.'],
+];
+/* ===== Команда «Арго» (метод цепочки: одна история связывает героев) ===== */
+const ARGO={yes:['y05','y03','y07','y10'],no:['y01','y02','y08','y04'],
+ why:'На «Арго» плыли Ясон, Орфей, Кастор и Полидевк и Геракл (он сошёл на полпути). Медея села на корабль только на обратном пути. Одиссей, Пенелопа, Минос и Эвридика — из других мифов.'};
+/* ===== Карта мифов (метод мест). Схема, не в масштабе ===== */
+const PL={
+ frakia:{t:'Фракия',x:330,y:58},iolk:{t:'Иолк',x:262,y:150},itaka:{t:'Итака',x:70,y:228},
+ fivy:{t:'Фивы',x:268,y:232},afiny:{t:'Афины',x:330,y:268},sparta:{t:'Спарта',x:200,y:330},
+ krit:{t:'Крит',x:355,y:430},kolhida:{t:'Колхида',x:612,y:120}};
+/* ===== состояние ===== */
+const ROUNDS=[{id:'know',name:'1. Ключи к именам'},{id:'who',name:'2. Кто это?'},{id:'keys',name:'3. Вспомни по ключу'},{id:'argo',name:'4. Команда «Арго»'},{id:'map',name:'5. Карта мифов'},{id:'clues',name:'6. Три улики'}];
+let cur='intro', res={}, missed=new Map(); const missedEx=new Set();
+const miss=(id,label)=>{missed.set(id+label,label); if(HM[id]) missedEx.add(id);};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>(s||'').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я ]/g,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){const m=a.length,n=b.length;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+const typedOk=(v,acc)=>{const x=norm(v);if(!x)return false;return x.split(' ').some(w=>acc.some(k=>w===k||lev(w,k)<=(k.length>5?2:1)))};
+function nav(){ $('#nav').innerHTML=`<button data-r="intro" aria-current="${cur==='intro'}">Начало</button>`+ROUNDS.map(r=>`<button data-r="${r.id}" aria-current="${cur===r.id}">${r.name}${res[r.id]?`<span class="st">${res[r.id].ok}/${res[r.id].n}</span>`:''}</button>`).join('')+`<button data-r="final" aria-current="${cur==='final'}">Итог</button>`;
+  document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.r));
+  const a=document.querySelector('#nav [aria-current="true"]'); if(a&&a.scrollIntoView) a.scrollIntoView({inline:'center',block:'nearest'}); }
+function go(r){cur=r;nav();({intro,know,who,keys,argo,map,clues,final})[r]();scrollTo(0,0)}
+function nextRound(){const i=ROUNDS.findIndex(r=>r.id===cur);go(i<ROUNDS.length-1?ROUNDS[i+1].id:'final')}
+function dots(n,list,i){return '<div class="dots">'+Array.from({length:n},(_,k)=>`<i class="${k<list.length?(list[k]?'ok':'bad'):k===i?'cur':''}"></i>`).join('')+'</div>'}
+function doneRound(id,name){const r=res[id];nav();
+  $('#main').innerHTML=`<div class="panel" style="text-align:center"><h2>${esc(name)}: ${r.ok} из ${r.n}</h2><p class="lead">${r.ok===r.n?'Без единой ошибки!':r.ok>=r.n*0.7?'Хорошо! Ошибки попадут в «повторить завтра».':'Этот зал стоит пройти ещё раз завтра: память крепнет, когда вспоминаешь через паузу.'}</p>
+  <div class="row" style="justify-content:center"><button class="btn big" id="nx">Следующий зал</button><button class="btn ghost" id="again">Ещё раз</button></div></div>`;
+  $('#nx').onclick=nextRound; $('#again').onclick=()=>go(id);}
+
+/* ===== НАЧАЛО ===== */
+function intro(){
+  $('#main').innerHTML=`<div class="panel"><h2>Десять героев — десять ключей</h2>
+  <p class="lead">Греческие имена непривычные и легко путаются: Орфей или Одиссей? Минос или Тесей? Поэтому к каждому имени — <b>ключ</b>: слово, которое в нём слышится, и яркая картинка. Ключ превращает имя в историю, а историю забыть трудно.</p>
+  <p class="lead" style="text-align:center;font-size:24px">${H.map(h=>h.em).join(' ')}</p>
+  <ol class="lead" style="margin-top:0"><li><b>Ключи к именам</b> — переворачивай карточки.</li><li><b>Кто это?</b> — различаем похожих героев.</li><li><b>Вспомни по ключу</b> — пишем имя сами.</li><li><b>Команда «Арго»</b> — кто плыл за золотым руном.</li><li><b>Карта мифов</b> — кто где жил.</li><li><b>Три улики</b> — как на экзамене 610.</li></ol>
+  <button class="btn big" id="start">Начать</button>
+  <details><summary>Для взрослого: какие приёмы мнемотехники здесь работают</summary><ul>
+   <li><b>Метод ключевого слова</b> (Аткинсон): незнакомое имя связывается со знакомым созвучным словом и общей картинкой: Ясон — «я сон» (дракон уснул), Пенелопа — «петли лопаются». Связь двойная — звук и смысл сюжета.</li>
+   <li><b>Метод мест</b>: герои «живут» на карте Греции — Итака, Крит, Фракия, Колхида. Пространственная память у детей сильная, а место становится второй ниточкой к сюжету.</li>
+   <li><b>Метод цепочки</b>: одна история (поход «Арго») связывает сразу пятерых — Ясона, Медею, Орфея, Кастора с Полидевком и Геракла.</li>
+   <li><b>Двойное кодирование</b>: у каждого героя свой знак — 🐴 конь Одиссея, 🧶 пряжа Пенелопы, ♊ Близнецы.</li>
+   <li><b>Различение похожих</b>: вопросы построены на парах, которые путают чаще всего: Орфей и Одиссей (оба «встречали» сирен), Пенелопа и Эвридика, Минос и Тесей.</li>
+   <li><b>Генерация и извлечение</b>: сначала узнавание, потом имя пишется самостоятельно, в конце — экзаменационный формат «назови по трём признакам». Ошибки собираются в «повторить завтра».</li>
+   <li><b>Почему эти герои.</b> В тестах 610 встречались Одиссей, Пенелопа, Орфей, Эвридика, Ясон и Кастор, в списке персоналий — Геракл, аргонавты и Минос. «Легенды и мифы Древней Греции» и «Одиссея» входят в список литературы для поступления. Медея, Полидевк и Тесей добавлены, потому что без них не рассказать сюжеты, которые там названы обязательными: аргонавты, Тесей и Минотавр.</li>
+   <li><b>Точность.</b> Сюжеты — по классическим пересказам (Н. А. Кун). Где версии мифа расходятся, взята самая распространённая. Картинки-ключи — это приёмы запоминания, а не факты мифа; в карточках они отделены от сюжета.</li></ul></details></div>`;
+  $('#start').onclick=()=>go('know');
+}
+
+/* ===== 1. КЛЮЧИ К ИМЕНАМ ===== */
+function know(){
+  const seen=new Set();
+  const draw=()=>{
+    $('#main').innerHTML=`<div class="panel"><h2>Ключи к именам</h2><p class="lead">Нажми на карточку: на обороте — <span class="key">ключ</span>, картинка для запоминания и что сделал герой. Прочитай вслух. Открой все десять.</p>
+    <div class="heroes">${H.map(h=>`<button class="hc ${seen.has(h.id)?'seen':''}" data-id="${h.id}" aria-label="${esc(h.n)}"><div>
+      <div class="f fr"><span class="em">${h.em}</span><span class="nm">${esc(h.n)}</span><span class="muted" style="font-size:14px">${esc(h.myth)}</span></div>
+      <div class="f bk"><div><span class="nm2">${h.em} ${esc(h.n)}</span> · <span class="key">${esc(h.key)}</span></div><div>${h.img}</div><div class="muted">${esc(h.s)}</div></div></div></button>`).join('')}</div>
+    <div class="row" style="margin-top:14px"><button class="btn big" id="nx" ${seen.size<H.length?'disabled style="opacity:.5"':''}>Дальше: «Кто это?»</button><span class="muted" id="cnt">Открыто ${seen.size} из ${H.length}</span></div></div>`;
+    document.querySelectorAll('.hc').forEach(b=>b.onclick=()=>{b.classList.toggle('flip'); if(!seen.has(b.dataset.id)){seen.add(b.dataset.id); b.classList.add('seen'); $('#cnt').textContent=`Открыто ${seen.size} из ${H.length}`; if(seen.size===H.length){const nx=$('#nx');nx.disabled=false;nx.style.opacity=1; res.know={ok:H.length,n:H.length}; nav();}}});
+    $('#nx').onclick=()=>{ if(seen.size===H.length) nextRound(); };
+  }; draw();
+}
+
+/* ===== 2. КТО ЭТО? ===== */
+function who(){
+  const it=shuffle(WHO); let i=0, list=[];
+  const draw=()=>{const [clue,ans,trap,why]=it[i];
+    const opts=shuffle([ans,trap,...shuffle(H.map(h=>h.id).filter(x=>x!==ans&&x!==trap)).slice(0,2)]);
+    $('#main').innerHTML=`<div class="panel"><h2>Кто это?</h2>${dots(it.length,list,i)}<div class="clue">${esc(clue)}</div>
+    <div class="opts">${opts.map(o=>`<button class="choice" data-id="${o}"><span class="em">${HM[o].em}</span>${esc(HM[o].n)}</button>`).join('')}</div><div id="fb"></div></div>`;
+    document.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{const ok=b.dataset.id===ans; list.push(ok); if(!ok) miss(ans,'Кто это: '+clue);
+      document.querySelectorAll('.choice').forEach(x=>{x.disabled=true; if(x.dataset.id===ans) x.classList.add('right')}); if(!ok) b.classList.add('wrong');
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно!':'Это '+esc(HM[ans].n)}</b>${esc(why)} <span class="key">${esc(HM[ans].key)}</span></div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<it.length?'Дальше':'Итог зала'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<it.length) draw(); else {res.who={ok:list.filter(Boolean).length,n:it.length}; doneRound('who','Кто это?');}}; $('#nx').focus({preventScroll:true}); $('#fb').scrollIntoView({block:'nearest',behavior:'smooth'});});
+  }; draw();
+}
+
+/* ===== 3. ВСПОМНИ ПО КЛЮЧУ (генерация) ===== */
+function keys(){
+  const it=shuffle(H).slice(0,7); let i=0, list=[];
+  const draw=()=>{const h=it[i];
+    $('#main').innerHTML=`<div class="panel"><h2>Вспомни по ключу</h2>${dots(it.length,list,i)}
+    <div class="clue"><span style="font-size:40px">${h.em}</span><br>Ключ: <span class="key">${esc(h.key)}</span></div><p class="hint">Кто это? Напиши имя. Первая буква — «${h.n[0]}».</p>
+    <form class="typed" id="tf"><input id="ti" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="имя героя" aria-label="Имя героя"><button class="btn">Проверить</button></form>
+    <div class="row" style="justify-content:center;margin-top:8px"><button class="btn ghost" id="idk">Не помню</button></div><div id="fb"></div></div>`;
+    const inp=$('#ti'); setTimeout(()=>inp.focus({preventScroll:true}),50);
+    const answer=v=>{const ok=typedOk(v,h.acc); list.push(ok); if(!ok) miss(h.id,'Ключ «'+h.key+'» → '+h.n);
+      $('#tf').querySelectorAll('input,button').forEach(x=>x.disabled=true); $('#idk').disabled=true; inp.blur();
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно: '+esc(h.n)+'!':'Это '+esc(h.n)}</b>${h.img}</div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<it.length?'Дальше':'Итог зала'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<it.length) draw(); else {res.keys={ok:list.filter(Boolean).length,n:it.length}; doneRound('keys','Вспомни по ключу');}}; $('#fb').scrollIntoView({block:'nearest',behavior:'smooth'});};
+    $('#tf').onsubmit=e=>{e.preventDefault(); if(inp.value.trim()) answer(inp.value);}; $('#idk').onclick=()=>answer('');
+  }; draw();
+}
+
+/* ===== 4. КОМАНДА «АРГО» ===== */
+function argo(){
+  const all=shuffle([...ARGO.yes,...ARGO.no]); const sel=new Set();
+  $('#main').innerHTML=`<div class="panel"><h2>Команда «Арго»</h2><p class="lead">Ясон собирает героев в поход за золотым руном. Отметь всех, кто плыл на корабле «Арго» (их четверо, вместе с Ясоном), и нажми «Отплываем!».</p>
+  <div class="opts">${all.map(o=>`<button class="choice" data-id="${o}" aria-pressed="false"><span class="em">${HM[o].em}</span>${esc(HM[o].n)}</button>`).join('')}</div>
+  <div class="row" style="margin-top:12px"><button class="btn big" id="go">⛵ Отплываем!</button></div><div id="fb"></div></div>`;
+  document.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{const on=!sel.has(b.dataset.id); on?sel.add(b.dataset.id):sel.delete(b.dataset.id); b.setAttribute('aria-pressed',on)});
+  $('#go').onclick=()=>{ let ok=0;
+    document.querySelectorAll('.choice').forEach(b=>{b.disabled=true; const y=ARGO.yes.includes(b.dataset.id), s=sel.has(b.dataset.id);
+      if(y===s) ok++; if(y) b.classList.add('right'); else if(s) b.classList.add('wrong'); if(y!==s) miss(b.dataset.id,'Команда «Арго»: '+HM[b.dataset.id].n+(y?' плыл':' не плыл'));});
+    $('#go').disabled=true; res.argo={ok,n:all.length};
+    $('#fb').innerHTML=`<div class="fb ${ok===all.length?'ok':'bad'}"><b>${ok===all.length?'Вся команда в сборе!':'Верно ' + ok + ' из ' + all.length}</b>${esc(ARGO.why)} Орфей своей песней спас аргонавтов от сирен, а Кастор и Полидевк — братья-близнецы.</div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">Итог зала</button></div>`;
+    $('#nx').onclick=()=>doneRound('argo','Команда «Арго»'); $('#fb').scrollIntoView({block:'nearest',behavior:'smooth'}); };
+}
+
+/* ===== 5. КАРТА МИФОВ (метод мест) ===== */
+function mapSVG(){
+  return `<svg class="map" viewBox="0 0 640 480" role="img" aria-label="Схема Греции с местами мифов">
+  <defs><pattern id="w" width="40" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 q10 -6 20 0 t20 0" fill="none" stroke="#4a8aa6" stroke-width="1.5" opacity=".5"/></pattern></defs>
+  <rect width="640" height="480" fill="url(#w)"/>
+  <path d="M150 0 L470 0 L470 40 L420 70 L360 95 L330 120 L300 135 L295 175 L330 205 L360 250 L345 285 L300 262 L270 262 L250 285 L270 320 L240 370 L215 390 L185 365 L160 375 L150 330 L130 300 L175 285 L160 250 L130 210 L110 165 L120 110 L140 60 Z" fill="#e9d9b0" stroke="#8a6224" stroke-width="3"/>
+  <path d="M56 222 q12 -12 24 0 q4 14 -10 18 q-16 -2 -14 -18z" fill="#e9d9b0" stroke="#8a6224" stroke-width="3"/>
+  <path d="M300 432 q40 -16 90 -8 q40 4 64 -4 q6 12 -12 20 q-50 12 -142 2z" fill="#e9d9b0" stroke="#8a6224" stroke-width="3"/>
+  <path d="M480 215 L640 200 L640 480 L440 480 L448 430 L470 375 L455 315 L478 262 Z" fill="#e9d9b0" stroke="#8a6224" stroke-width="3"/>
+  <path d="M598 30 L640 25 L640 192 L588 186 L582 120 Z" fill="#e9d9b0" stroke="#8a6224" stroke-width="3"/>
+  <text x="500" y="150" font-size="16" fill="#f6eedb" font-family="Lora,Georgia,serif" font-style="italic">Чёрное</text><text x="508" y="170" font-size="16" fill="#f6eedb" font-family="Lora,Georgia,serif" font-style="italic">море</text>
+  <text x="370" y="318" font-size="16" fill="#f6eedb" font-family="Lora,Georgia,serif" font-style="italic">Эгейское</text><text x="384" y="338" font-size="16" fill="#f6eedb" font-family="Lora,Georgia,serif" font-style="italic">море</text>
+  <text x="24" y="470" font-size="14" fill="#f6eedb" font-family="Lora,Georgia,serif" font-style="italic">схема, не в масштабе</text>
+  ${Object.entries(PL).map(([k,p])=>`<g class="place" data-p="${k}" tabindex="0" role="button" aria-label="${p.t}"><circle class="hit" cx="${p.x}" cy="${p.y}" r="30"/><circle class="dot" cx="${p.x}" cy="${p.y}" r="11"/><text x="${p.x+(k==='kolhida'?20:0)}" y="${p.y-18}" text-anchor="${k==='kolhida'?'end':'middle'}">${p.t}</text></g>`).join('')}
+  </svg>`;
+}
+function map(){
+  const it=shuffle(H); let i=0, list=[];
+  const draw=()=>{const h=it[i];
+    $('#main').innerHTML=`<div class="panel"><h2>Карта мифов</h2>${dots(it.length,list,i)}<div class="clue"><span style="font-size:32px">${h.em}</span> Где жил${['y02','y04','y06'].includes(h.id)?'а':h.id==='y07'?'и':''} <b>${esc(h.n)}</b>? Нажми на место.</div>${mapSVG()}<div id="fb"></div></div>`;
+    const pick=k=>{if(document.querySelector('.place.right'))return; const ok=k===h.place; list.push(ok); if(!ok) miss(h.id,'Карта: '+h.n+' — '+PL[h.place].t);
+      document.querySelector(`.place[data-p="${h.place}"]`).classList.add('right'); if(!ok) document.querySelector(`.place[data-p="${k}"]`).classList.add('wrong');
+      const here=H.filter(x=>x.place===h.place).map(x=>x.n).join(' и ');
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно!':'Нет, '+esc(PL[h.place].t)}</b>${esc(PL[h.place].t)}: ${esc(here)}. ${h.place==='kolhida'?'Колхида — далёкая страна на восточном берегу Чёрного моря, туда и плыли аргонавты.':''}${h.place==='krit'?'Крит — большой остров на юге. Море, в которое бросился царь Эгей, так и зовут — Эгейское.':''}${h.place==='itaka'?'Итака — маленький остров на западе, туда Одиссей плыл десять лет.':''}</div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<it.length?'Дальше':'Итог зала'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<it.length) draw(); else {res.map={ok:list.filter(Boolean).length,n:it.length}; doneRound('map','Карта мифов');}}; $('#fb').scrollIntoView({block:'nearest',behavior:'smooth'});};
+    document.querySelectorAll('.place').forEach(g=>{g.onclick=()=>pick(g.dataset.p); g.onkeydown=e=>{if(e.key==='Enter')pick(g.dataset.p)};});
+  }; draw();
+}
+
+/* ===== 6. ТРИ УЛИКИ (формат экзамена) ===== */
+function clues(){
+  const pri=H.filter(h=>missedEx.has(h.id)); const it=pri.concat(shuffle(H.filter(h=>!missedEx.has(h.id)))).slice(0,6); let i=0, list=[];
+  const draw=()=>{const h=it[i];
+    $('#main').innerHTML=`<div class="panel"><h2>Три улики</h2><p class="lead">Как на экзамене: по трём словам назови героя.${pri.length&&i===0?' Сначала — те, на ком ты ошибался.':''}</p>${dots(it.length,list,i)}
+    <div class="clue"><b>${esc(h.c3)}</b></div>
+    <form class="typed" id="tf"><input id="ti" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="кто это?" aria-label="Имя героя"><button class="btn">Проверить</button></form>
+    <div class="row" style="justify-content:center;margin-top:8px"><button class="btn ghost" id="idk">Не помню</button></div><div id="fb"></div></div>`;
+    const inp=$('#ti'); setTimeout(()=>inp.focus({preventScroll:true}),50);
+    const answer=v=>{const ok=typedOk(v,h.acc); list.push(ok); if(!ok) miss(h.id,'Три улики: '+h.c3+' → '+h.n);
+      $('#tf').querySelectorAll('input,button').forEach(x=>x.disabled=true); $('#idk').disabled=true; inp.blur();
+      $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'Верно: '+esc(h.n)+'!':'Это '+esc(h.n)}</b>${esc(h.s)} <span class="key">${esc(h.key)}</span></div><div class="row" style="margin-top:12px"><button class="btn big" id="nx">${i+1<it.length?'Дальше':'Итог'}</button></div>`;
+      $('#nx').onclick=()=>{i++; if(i<it.length) draw(); else {res.clues={ok:list.filter(Boolean).length,n:it.length}; go('final');}}; $('#fb').scrollIntoView({block:'nearest',behavior:'smooth'});};
+    $('#tf').onsubmit=e=>{e.preventDefault(); if(inp.value.trim()) answer(inp.value);}; $('#idk').onclick=()=>answer('');
+  }; draw();
+}
+
+/* ===== ИТОГ ===== */
+function reportToMuseum(){
+  const done=Object.entries(res).filter(([k])=>k!=='know').map(([,v])=>v); if(done.length<3) return;
+  const ok=done.reduce((a,r)=>a+r.ok,0), n=done.reduce((a,r)=>a+r.n,0); const rate=ok/n>=.9?'easy':ok/n>=.6?'ok':'hard';
+  try{localStorage.setItem('museum-result',JSON.stringify({q:'mify',rate,missed:[...missedEx],at:Date.now()}))}catch(e){}
+}
+function final(){
+  reportToMuseum();
+  const rows=ROUNDS.map(r=>`<tr><td>${r.name}</td><td>${res[r.id]?res[r.id].ok+' из '+res[r.id].n:'—'}</td></tr>`).join('');
+  const rep=[...missed.values()];
+  $('#main').innerHTML=`<div class="panel"><h2>Пантеон героев</h2>
+   <div class="heroes" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${H.map(h=>`<div class="panel" style="margin:0;padding:10px;border-width:3px;text-align:center;${missedEx.has(h.id)?'border-color:#b3412e':''}"><div style="font-size:32px">${h.em}</div><b style="color:var(--wall)">${esc(h.n)}</b><div style="font-size:13px" class="muted">${esc(h.key)}</div></div>`).join('')}</div>
+   <table class="summary" style="margin-top:14px"><tr><th>Зал</th><th>Результат</th></tr>${rows}</table>
+   ${rep.length?`<h3 style="color:var(--wall)">Повторить завтра</h3><ul class="lead">${rep.map(r=>'<li>'+esc(r)+'</li>').join('')}</ul><p class="muted">Лучше всего — завтра «Вспомни по ключу» и «Три улики», через неделю — весь квиз. Красной рамкой отмечены герои, на которых были ошибки.</p>`:'<p class="lead">Ошибок нет — повторим через неделю, проверим, держатся ли ключи.</p>'}
+   <p class="lead"><b>Задание на воображение:</b> придумай свой ключ к имени Ахилл или Персей и расскажи его взрослому. Свой ключ запоминается крепче готового.</p>
+   <div class="row"><button class="btn big" id="again">Пройти заново</button></div></div>`;
+  $('#again').onclick=()=>{res={};missed=new Map();missedEx.clear();go('know')};
+}
+/* кнопка «← Музей» — только внутри приложения «Музей Саши» */
+$('#back').hidden=false;
+nav(); intro();
+</script>
+</body>
+</html>

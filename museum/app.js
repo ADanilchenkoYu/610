@@ -207,6 +207,13 @@ function question(id, box) {
   } else if (e.t === 'order') {
     Q.kind = F >= 3 ? 'Что раньше? Без подсказок' : 'Что раньше?'; Q.typed = false; Q.prompt = 'Что появилось или случилось раньше?';
     Q.options = shuffle([e.a, e.b]); Q.answer = e.ans === 0 ? e.a : e.b; Q.reveal = 'Раньше: ' + Q.answer; Q.fact = e.fact;
+  } else if (e.t === 'myth') {
+    const ms = others.filter(x => x.t === 'myth');
+    Q.reveal = e.em + ' ' + e.name + ' — ' + e.myth + ' (ключ: «' + e.mkey + '»)'; Q.fact = e.fact + ' Ключ: ' + e.mimg;
+    if (F === 1) { Q.kind = 'Кто из героев?'; Q.typed = false; Q.prompt = 'Кто это? ' + e.clue; Q.options = pickDistr(e.name, [ms.filter(x => x.myth === e.myth).map(x => x.name), ms.map(x => x.name)]); Q.answer = e.name; }
+    else if (F === 2) { Q.kind = 'Слово-ключ'; Q.typed = false; Q.prompt = 'Чей это ключ?'; Q.big = '«' + e.mkey + '»'; Q.options = pickDistr(e.name, [ms.map(x => x.name)]); Q.answer = e.name; }
+    else if (F === 4) { Q.kind = 'Формат 610: три улики'; Q.prompt = 'Улики: ' + e.clue3 + '. Кто это? Напиши имя.'; Q.keys = e.key; }
+    else { Q.kind = 'Вспомни по ключу'; Q.prompt = 'Ключ — «' + e.mkey + '». ' + e.clue + ' Кто это? Напиши имя.'; Q.keys = e.key; }
   } else if (e.t === 'phrase') {
     Q.reveal = e.phrase + ' — ' + e.mean; Q.fact = e.fact;
     if (F === 1) { Q.kind = 'Пойми выражение'; Q.prompt = 'Что значит:'; Q.big = '«' + e.phrase + '»'; Q.sub = e.sent; Q.options = pickDistr(e.mean, [others.map(x => x.mean)]); Q.answer = e.mean; }
